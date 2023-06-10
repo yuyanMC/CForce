@@ -271,8 +271,9 @@ async function main(){
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
     ctx.fillStyle="rgb(200,200,200)";
-    ctx.font="200px";
-    ctx.fillText("游戏正在加载",1200,1700);
+    ctx.font="200px 'Courier New'";
+    ctx.textAlign="center";
+    ctx.fillText("游戏正在加载",1600,900);
     bus.on("hit",function(e) {
         combo++;
     });
@@ -305,7 +306,11 @@ async function main(){
     });
     await fetch('./demo.json').then(async (response) => song=await response.json());
     sound_hit=new Audio("./hit.mp3");
-    sound_bg=new Audio(song!.bgsound);
+    if(song!.bgsound){
+        sound_bg=new Audio(song!.bgsound);
+    }else{
+        sound_bg=new Audio("./blank.mp3");
+    }
     await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},100);});
     sound_bg.volume=0.5*base_volume;
     sound_hit.volume=1*base_volume;

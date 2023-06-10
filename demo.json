@@ -356,5 +356,5 @@
             "h":10
         }
     ],
-    "bgsound":"./demo.mp3"
+    "bgsound":false
 }
