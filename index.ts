@@ -198,7 +198,7 @@ function drawnote(note:Note){
     ctx.stroke();
 }
 function drawA(note:Note){
-    if(note.a!=0&&note.aa*4<tps){
+    if(note.a>0&&note.aa*4<tps){
         let rc=note.aa*4/tps+1;
         let np=note.p.cal(1);
         if(note.a==1){
@@ -317,6 +317,7 @@ async function main(){
                 element.aa=1;
                 bus.emit("hit",1);
             }else if((tick-element.h*tps)>0.08*tps){
+                element.a=-1;
                 bus.emit("miss",null);
             }
             drawnote(element);
