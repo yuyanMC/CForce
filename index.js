@@ -104,6 +104,9 @@ var tps = 100;
 var song = null;
 var autoPlay = false;
 var combo = 0;
+var sound_hit = null;
+var sound_bg = null;
+var base_volume = 0.2;
 var bus = new EventBus();
 var Path = /** @class */ (function () {
     function Path(_spd) {
@@ -300,7 +303,7 @@ function parseSong() {
     if (song === null) {
         throw Error("Song not loaded");
     }
-    song.forEach(function (element) {
+    song.notes.forEach(function (element) {
         var ps = [];
         element.paths.forEach(function (pe) {
             ps.push(parsePath(pe));
@@ -341,6 +344,11 @@ function main() {
                     bus.on("hit", function (e) {
                         combo++;
                     });
+                    bus.on("hit", function (e) {
+                        sound_hit.pause();
+                        sound_hit.fastSeek(0);
+                        sound_hit.play();
+                    });
                     bus.on("miss", function (e) {
                         combo = 0;
                     });
@@ -372,13 +380,31 @@ function main() {
                         }); }); })];
                 case 1:
                     _a.sent();
+                    sound_hit = new Audio("./hit.mp3");
+                    sound_bg = new Audio(song.bgsound);
+                    return [4 /*yield*/, new Promise(function (r) { var t = setInterval(function () { if (sound_hit.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                            clearInterval(t);
+                            r(null);
+                        } }, 100); })];
+                case 2:
+                    _a.sent();
+                    sound_bg.volume = 0.5 * base_volume;
+                    sound_hit.volume = 1 * base_volume;
                     parseSong();
                     ctx.fillStyle = "rgb(0,0,0)";
                     ctx.fillRect(0, 0, 3200, 1800);
                     centerNote = new Note(new StaticPath(3600, 1600, 900), 3600);
-                    _a.label = 2;
-                case 2:
-                    if (!true) return [3 /*break*/, 4];
+                    /*
+                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
+                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
+                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4.5));
+                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
+                    */
+                    //drawnote(new Note(new StaticPath(800,450),0,3600));
+                    sound_bg.play();
+                    _a.label = 3;
+                case 3:
+                    if (!true) return [3 /*break*/, 5];
                     drawnote(centerNote);
                     notes.forEach(function (element) {
                         if (element.a) {
@@ -400,10 +426,10 @@ function main() {
                     });
                     drawTexts();
                     return [4 /*yield*/, nextFrame()];
-                case 3:
+                case 4:
                     _a.sent();
-                    return [3 /*break*/, 2];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 3];
+                case 5: return [2 /*return*/];
             }
         });
     });

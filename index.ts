@@ -36,9 +36,12 @@ var ctx:CanvasRenderingContext2D;
 var notes:Array<Note>=new Array();
 var tick:number=0;
 var tps:number=100;
-var song:Array<{paths:Array<IPath>,h:number}>|null=null;
+var song:{notes:Array<{paths:Array<IPath>,h:number}>,bgsound:string}|null=null;
 var autoPlay:boolean=false;
 var combo:number=0;
+var sound_hit:HTMLAudioElement|null=null;
+var sound_bg:HTMLAudioElement|null=null;
+var base_volume=0.2;
 const bus = new EventBus<{
     hit: number,
     miss: null,
@@ -247,7 +250,7 @@ function parseSong(){
     if(song===null){
         throw Error("Song not loaded");
     }
-    song.forEach(element => {
+    song.notes.forEach(element => {
         let ps:Array<Path>=[];
         element.paths.forEach(pe => {
             ps.push(parsePath(pe));
@@ -273,6 +276,11 @@ async function main(){
     bus.on("hit",function(e) {
         combo++;
     });
+    bus.on("hit",function(e) {
+        sound_hit!.pause();
+        sound_hit!.fastSeek(0);
+        sound_hit!.play();
+    });
     bus.on("miss",function(e){
         combo=0;
     })
@@ -296,6 +304,11 @@ async function main(){
         }
     });
     await fetch('./demo.json').then(async (response) => song=await response.json());
+    sound_hit=new Audio("./hit.mp3");
+    sound_bg=new Audio(song!.bgsound);
+    await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},100);});
+    sound_bg.volume=0.5*base_volume;
+    sound_hit.volume=1*base_volume;
     parseSong();
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
@@ -307,6 +320,7 @@ async function main(){
     notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
     */
     //drawnote(new Note(new StaticPath(800,450),0,3600));
+    sound_bg.play();
     while(true){
         drawnote(centerNote);
         notes.forEach(element => {
