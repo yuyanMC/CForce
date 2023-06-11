@@ -34,9 +34,10 @@ class EventBus<Events extends Record<string, any>> {
 
 var ctx:CanvasRenderingContext2D;
 var notes:Array<Note>=new Array();
+var animationNotes:Array<Note>=new Array();
 var tick:number=0;
 var tps:number=100;
-var song:{notes:Array<{paths:Array<IPath>,h:number}>,bgsound:string}|null=null;
+var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined}>,bgsound:string}|null=null;
 var autoPlay:boolean=false;
 var combo:number=0;
 var sound_hit:HTMLAudioElement|null=null;
@@ -54,8 +55,7 @@ interface IPath{
     f?:[number,number];
     t?:[number,number];
     //Static
-    x?:number;
-    y?:number;
+    pos?:[number,number];
     //Subscriber
     p?:IPath;
 }
@@ -78,6 +78,22 @@ class StaticPath extends Path{
     }
     cal(t: number){
         return [this.x,this.y];
+    }
+}
+class LinePath extends Path{
+    fx:number;
+    fy:number;
+    tx:number;
+    ty:number;
+    constructor(_spd,_fx: number,_fy: number,_tx:number,_ty:number){
+        super(_spd);
+        this.fx=_fx;
+        this.fy=_fy;
+        this.tx=_tx;
+        this.ty=_ty;
+    }
+    cal(t: number){
+        return [this.fx+(this.tx-this.fx)*t,this.fy+(this.ty-this.fy)*t];
     }
 }
 class ArcPath extends Path{
@@ -170,11 +186,22 @@ class Note{
     spd:number;
     a:number;
     aa:number;
+    ho:number|undefined;
+    t:"A"|"B"|"M";
 
-    constructor(_p: Path,_h: number){
+    constructor(_p: Path,_h: number,_t: "A"|"B"|"M"){
         this.p=_p;
         this.h=_h;
+        this.t=_t;
     }
+}
+function getQueryString(name) {
+    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    };
+    return null;
 }
 function angcalc(cx,cy,ax,ay){
     if(ay==cy){
@@ -191,7 +218,13 @@ function drawnote(note:Note){
         return;
     }
     let np=note.p.cal((sec-note.h+note.p.spd)/note.p.spd);
-    ctx.fillStyle="#404040";
+    if(note.t=="A"){
+        ctx.fillStyle="rgb(0,220,240)";
+    }else if(note.t=="B"){
+        ctx.fillStyle="rgb(220,70,20)";
+    }else{
+        ctx.fillStyle="rgb(64,64,64)";
+    }
     ctx.beginPath();
     ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
     ctx.fill();
@@ -201,7 +234,18 @@ function drawnote(note:Note){
     ctx.stroke();
 }
 function drawA(note:Note){
-    if(note.a>0&&note.aa*4<tps){
+    if(note.a==11&&note.aa<note.ho!*tps){
+        let np=note.p.cal(1);
+        let rc=note.aa/note.ho!/tps+1;
+        ctx.fillStyle=`rgba(64,64,64,${2-rc}`;
+        ctx.beginPath();
+        ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.strokeStyle=`rgba(255,255,255,${2-rc})`;
+        ctx.beginPath();
+        ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
+        ctx.stroke();
+    }else if(note.a>0&&note.aa*4<tps){
         let rc=note.aa*4/tps+1;
         let np=note.p.cal(1);
         if(note.a==1){
@@ -212,7 +256,7 @@ function drawA(note:Note){
         ctx.beginPath();
         ctx.arc(np[0],np[1],88*rc,0, Math.PI * 2, true);
         ctx.fill();
-        ctx.strokeStyle="rgb(255,255,255)"
+        ctx.strokeStyle=`rgba(255,255,255,${2-rc})`;
         ctx.beginPath();
         ctx.arc(np[0],np[1],80*rc,0, Math.PI * 2, true);
         ctx.stroke();
@@ -232,8 +276,11 @@ function parsePath(n:IPath){
         case "arc":
             p=new ArcPath(ep.spd,ep.c![0],ep.c![1],ep.f![0],ep.f![1],ep.t![0],ep.t![1]);
             break;
+        case "line":
+            p=new LinePath(ep.spd,ep.f![0],ep.f![1],ep.t![0],ep.t![1]);
+            break;
         case "static":
-            p=new StaticPath(ep.spd,ep.x!,ep.y!);
+            p=new StaticPath(ep.spd,ep.pos![0],ep.pos![1]);
             break;
         case "pow2":
             p=new Pow2SPath(parsePath(ep.p!));
@@ -256,7 +303,17 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        notes.push(new Note(p,element.h));
+        notes.push(new Note(p,element.h,element.track));
+    });
+    song.animationNotes.forEach(element => {
+        let ps:Array<Path>=[];
+        element.paths.forEach(pe => {
+            ps.push(parsePath(pe));
+        });
+        let p:Path=new MultiPath(ps);
+        let n:Note=new Note(p,element.h,"M");
+        n.ho=element.ho;
+        animationNotes.push(n);
     });
 }
 async function nextFrame(){
@@ -289,7 +346,23 @@ async function main(){
         console.log(e);
         if(e.keyCode==65){
             notes.forEach((element)=>{
-                if(element.a){
+                if(element.a||element.t!="A"){
+                    return;
+                }
+                if(Math.abs(element.h*tps-tick)<=0.04*tps){
+                    element.a=1;
+                    element.aa=1;
+                    bus.emit("hit",1);
+                }else if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                    element.a=2;
+                    element.aa=1;
+                    bus.emit("hit",2);
+                }
+            });
+        }
+        if(e.keyCode==76){
+            notes.forEach((element)=>{
+                if(element.a||element.t!="B"){
                     return;
                 }
                 if(Math.abs(element.h*tps-tick)<=0.04*tps){
@@ -304,7 +377,15 @@ async function main(){
             });
         }
     });
-    await fetch('./demo.json').then(async (response) => song=await response.json());
+    let dataFile=getQueryString("datafile");
+    if(dataFile==null){
+        ctx.fillStyle="rgb(0,0,0)";
+        ctx.fillRect(0,0,3200,1800);
+        ctx.fillStyle="rgb(200,200,200)";
+        ctx.fillText("游戏加载错误，请尝试刷新",1600,900);
+        throw new Error("No data file given.");
+    }
+    await fetch(dataFile).then(async (response) => song=await response.json());
     sound_hit=new Audio("./hit.mp3");
     if(song!.bgsound){
         sound_bg=new Audio(song!.bgsound);
@@ -317,7 +398,7 @@ async function main(){
     parseSong();
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
-    let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
+    //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
     /*
     notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
     notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
@@ -327,7 +408,19 @@ async function main(){
     //drawnote(new Note(new StaticPath(800,450),0,3600));
     sound_bg.play();
     while(true){
-        drawnote(centerNote);
+        //drawnote(centerNote);
+        animationNotes.forEach(element=>{
+            if(element.a){
+                element.aa++;
+            }else if(Math.abs(element.h*tps-tick)<=1){
+                if(element.ho){
+                    element.a=11;
+                    element.aa=1;
+                }
+            }
+            drawnote(element);
+            drawA(element);
+        });
         notes.forEach(element => {
             if(element.a){
                 element.aa++;

@@ -99,6 +99,7 @@ var EventBus = /** @class */ (function () {
 // libEnd
 var ctx;
 var notes = new Array();
+var animationNotes = new Array();
 var tick = 0;
 var tps = 100;
 var song = null;
@@ -129,6 +130,21 @@ var StaticPath = /** @class */ (function (_super) {
         return [this.x, this.y];
     };
     return StaticPath;
+}(Path));
+var LinePath = /** @class */ (function (_super) {
+    __extends(LinePath, _super);
+    function LinePath(_spd, _fx, _fy, _tx, _ty) {
+        var _this = _super.call(this, _spd) || this;
+        _this.fx = _fx;
+        _this.fy = _fy;
+        _this.tx = _tx;
+        _this.ty = _ty;
+        return _this;
+    }
+    LinePath.prototype.cal = function (t) {
+        return [this.fx + (this.tx - this.fx) * t, this.fy + (this.ty - this.fy) * t];
+    };
+    return LinePath;
 }(Path));
 var ArcPath = /** @class */ (function (_super) {
     __extends(ArcPath, _super);
@@ -222,12 +238,22 @@ var MultiPath = /** @class */ (function (_super) {
     return MultiPath;
 }(Path));
 var Note = /** @class */ (function () {
-    function Note(_p, _h) {
+    function Note(_p, _h, _t) {
         this.p = _p;
         this.h = _h;
+        this.t = _t;
     }
     return Note;
 }());
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    }
+    ;
+    return null;
+}
 function angcalc(cx, cy, ax, ay) {
     if (ay == cy) {
         return Math.PI;
@@ -243,7 +269,15 @@ function drawnote(note) {
         return;
     }
     var np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
-    ctx.fillStyle = "#404040";
+    if (note.t == "A") {
+        ctx.fillStyle = "rgb(0,220,240)";
+    }
+    else if (note.t == "B") {
+        ctx.fillStyle = "rgb(220,70,20)";
+    }
+    else {
+        ctx.fillStyle = "rgb(64,64,64)";
+    }
     ctx.beginPath();
     ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
     ctx.fill();
@@ -253,7 +287,19 @@ function drawnote(note) {
     ctx.stroke();
 }
 function drawA(note) {
-    if (note.a > 0 && note.aa * 4 < tps) {
+    if (note.a == 11 && note.aa < note.ho * tps) {
+        var np = note.p.cal(1);
+        var rc = note.aa / note.ho / tps + 1;
+        ctx.fillStyle = "rgba(64,64,64,".concat(2 - rc);
+        ctx.beginPath();
+        ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,".concat(2 - rc, ")");
+        ctx.beginPath();
+        ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
+        ctx.stroke();
+    }
+    else if (note.a > 0 && note.aa * 4 < tps) {
         var rc = note.aa * 4 / tps + 1;
         var np = note.p.cal(1);
         if (note.a == 1) {
@@ -265,7 +311,7 @@ function drawA(note) {
         ctx.beginPath();
         ctx.arc(np[0], np[1], 88 * rc, 0, Math.PI * 2, true);
         ctx.fill();
-        ctx.strokeStyle = "rgb(255,255,255)";
+        ctx.strokeStyle = "rgba(255,255,255,".concat(2 - rc, ")");
         ctx.beginPath();
         ctx.arc(np[0], np[1], 80 * rc, 0, Math.PI * 2, true);
         ctx.stroke();
@@ -285,8 +331,11 @@ function parsePath(n) {
         case "arc":
             p = new ArcPath(ep.spd, ep.c[0], ep.c[1], ep.f[0], ep.f[1], ep.t[0], ep.t[1]);
             break;
+        case "line":
+            p = new LinePath(ep.spd, ep.f[0], ep.f[1], ep.t[0], ep.t[1]);
+            break;
         case "static":
-            p = new StaticPath(ep.spd, ep.x, ep.y);
+            p = new StaticPath(ep.spd, ep.pos[0], ep.pos[1]);
             break;
         case "pow2":
             p = new Pow2SPath(parsePath(ep.p));
@@ -309,7 +358,17 @@ function parseSong() {
             ps.push(parsePath(pe));
         });
         var p = new MultiPath(ps);
-        notes.push(new Note(p, element.h));
+        notes.push(new Note(p, element.h, element.track));
+    });
+    song.animationNotes.forEach(function (element) {
+        var ps = [];
+        element.paths.forEach(function (pe) {
+            ps.push(parsePath(pe));
+        });
+        var p = new MultiPath(ps);
+        var n = new Note(p, element.h, "M");
+        n.ho = element.ho;
+        animationNotes.push(n);
     });
 }
 function nextFrame() {
@@ -329,7 +388,7 @@ function nextFrame() {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var canvas, centerNote;
+        var canvas, dataFile;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -357,7 +416,24 @@ function main() {
                         console.log(e);
                         if (e.keyCode == 65) {
                             notes.forEach(function (element) {
-                                if (element.a) {
+                                if (element.a || element.t != "A") {
+                                    return;
+                                }
+                                if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
+                                    element.a = 1;
+                                    element.aa = 1;
+                                    bus.emit("hit", 1);
+                                }
+                                else if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
+                                    element.a = 2;
+                                    element.aa = 1;
+                                    bus.emit("hit", 2);
+                                }
+                            });
+                        }
+                        if (e.keyCode == 76) {
+                            notes.forEach(function (element) {
+                                if (element.a || element.t != "B") {
                                     return;
                                 }
                                 if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
@@ -373,7 +449,15 @@ function main() {
                             });
                         }
                     });
-                    return [4 /*yield*/, fetch('./demo.json').then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                    dataFile = getQueryString("datafile");
+                    if (dataFile == null) {
+                        ctx.fillStyle = "rgb(0,0,0)";
+                        ctx.fillRect(0, 0, 3200, 1800);
+                        ctx.fillStyle = "rgb(200,200,200)";
+                        ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+                        throw new Error("No data file given.");
+                    }
+                    return [4 /*yield*/, fetch(dataFile).then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, response.json()];
                                 case 1: return [2 /*return*/, song = _a.sent()];
@@ -399,7 +483,7 @@ function main() {
                     parseSong();
                     ctx.fillStyle = "rgb(0,0,0)";
                     ctx.fillRect(0, 0, 3200, 1800);
-                    centerNote = new Note(new StaticPath(3600, 1600, 900), 3600);
+                    //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
                     /*
                     notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
                     notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
@@ -411,7 +495,20 @@ function main() {
                     _a.label = 3;
                 case 3:
                     if (!true) return [3 /*break*/, 5];
-                    drawnote(centerNote);
+                    //drawnote(centerNote);
+                    animationNotes.forEach(function (element) {
+                        if (element.a) {
+                            element.aa++;
+                        }
+                        else if (Math.abs(element.h * tps - tick) <= 1) {
+                            if (element.ho) {
+                                element.a = 11;
+                                element.aa = 1;
+                            }
+                        }
+                        drawnote(element);
+                        drawA(element);
+                    });
                     notes.forEach(function (element) {
                         if (element.a) {
                             element.aa++;

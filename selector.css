@@ -1,0 +1,57 @@
+html{
+    height: 100%;
+}
+body{
+    background-color: black;
+    height: 100%;
+    color:white;
+}
+#song_list,#operation{
+    position: absolute;
+    width: 46%;
+    height: 96%;
+    margin: 2%;
+    border: white 2px solid;
+}
+#operation{
+    left:50%;
+}
+#song_list>p{
+    position: relative;
+    top: 0px;
+    left:0px;
+    border: white 1px solid;
+    padding: 10px;
+    margin: 10px;
+}
+#song_list>p:hover{
+    background-color: #404040;
+    transform: scale(1.2,1.2);
+    transform-origin: left;
+    width: calc(100% / 1.2 - 17px);
+}
+#operation>h1{
+    margin: 20px;
+}
+#operation>h3{
+    margin: 20px;
+}
+#operation>button{
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: black;
+    color: white;
+    outline: 0;
+    border: white 1px solid;
+    font-size: 20px;
+    padding: 10px;
+}
+#operation>button:hover{
+    transform: scale(1.2);
+}
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding:0;
+}

@@ -1,0 +1,12 @@
+[
+    {
+        "id":"demo",
+        "name":"DEMO",
+        "difficulty":1
+    },
+    {
+        "id":"阴游",
+        "name":"阴游",
+        "difficulty":8
+    }
+]
