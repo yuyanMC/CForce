@@ -645,5 +645,6 @@
             "ho":0.5
         }
     ],
-    "bgsound":false
+    "bgsound":false,
+    "length":11
 }

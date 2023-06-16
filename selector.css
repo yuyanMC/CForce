@@ -28,7 +28,7 @@ body{
     background-color: #404040;
     transform: scale(1.2,1.2);
     transform-origin: left;
-    width: calc(100% / 1.2 - 17px);
+    width: calc(100% / 1.2 - 16.75px);
 }
 #operation>h1{
     margin: 20px;

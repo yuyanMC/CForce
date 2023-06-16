@@ -1,0 +1,108 @@
+@keyframes slideX {
+    from{
+        transform: translateX(200%);
+    }
+    to{
+        transform: translateX(0px);
+    }
+}
+html{
+    height: 100%;
+}
+body{
+    background-color: black;
+    height: 100%;
+    overflow-x: hidden;
+    color:white;
+}
+#data{
+    animation: slideX 2s alternate;
+    position: relative;
+    top:17%;
+    width: 56%;
+    height: 46%;
+    margin-left: 22%;
+    margin-right: 22%;
+    border: white 2px solid;
+}
+#name{
+    position: absolute;
+    top:10%;
+    left:10%;
+    font-size: 2em;
+}
+#mctag,#ptag,#gtag,#mtag{
+    position:absolute;
+    top:70%;
+    width: 20%;
+    text-align: center;
+}
+#mcnum,#pnum,#gnum,#mnum{
+    position:absolute;
+    top:80%;
+    width: 20%;
+    text-align: center;
+}
+#mctag,#mcnum{
+    left:20%;
+}
+#ptag,#pnum{
+    left:40%;
+}
+#gtag,#gnum{
+    left:60%;
+}
+#mtag,#mnum{
+    left:80%;
+}
+#lvl{
+    position: absolute;
+    top:40%;
+    left:10%;
+    font-size: 6em;
+    text-shadow: -10px 10px 3px #808080;
+}
+#point{
+    position: absolute;
+    top:40%;
+    left:30%;
+    font-size: 3em;
+}
+#operation{
+    animation: slideX 2s alternate;
+    position: relative;
+    top: 22%;
+    width: 56%;
+    height: 10%;
+    margin-left: 22%;
+    margin-right: 22%;
+    border: white 2px solid;
+}
+button{
+    position: absolute;
+    background-color: black;
+    color: white;
+    outline: 0;
+    border: white 1px solid;
+    font-size: 20px;
+    padding: 10px;
+}
+#operation>button:hover{
+    transform: scale(1.2);
+}
+#again{
+    left:10px;
+    top:15%;
+    height:70%;
+}
+#next{
+    right:10px;
+    top:15%;
+    height:70%;
+}
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding:0;
+    font-family: 'Courier New', Courier, monospace;
+}

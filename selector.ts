@@ -40,7 +40,7 @@ async function smain(){
     document.addEventListener("click",function(e){
         if(e.target instanceof HTMLButtonElement){
             console.log("Redirecting...");
-            window.location.replace(`./player.html?datafile=${songs[chosen].id}.json`);
+            window.location.replace(`./player.html?id=${songs[chosen].id}`);
         }
     })
     /*

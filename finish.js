@@ -34,15 +34,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-// 示例歌曲列表
-function smain() {
+function fgetQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    }
+    ;
+    return null;
+}
+function fmain() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var songs, songList, chosen, i, li;
+        var songs, id, perfect, good, miss, max_combo, point, song_name, p, rating;
         var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     songs = [];
+                    id = fgetQueryString("i");
+                    perfect = fgetQueryString("p");
+                    good = fgetQueryString("g");
+                    miss = fgetQueryString("m");
+                    max_combo = fgetQueryString("c");
+                    point = fgetQueryString("t");
                     return [4 /*yield*/, fetch("data.json").then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, response.json()];
@@ -50,38 +65,48 @@ function smain() {
                             }
                         }); }); })];
                 case 1:
-                    _a.sent();
-                    songList = document.getElementById('song_list');
-                    chosen = -1;
-                    // 创建歌曲列表项并添加到容器中
-                    for (i = 0; i < songs.length; i++) {
-                        li = document.createElement('p');
-                        li.classList.add("li");
-                        li.dataset.n = i.toString();
-                        li.innerText = "".concat(songs[i].name);
-                        li.onclick = function (e) {
-                            e.preventDefault();
-                            chosen = parseInt(e.target.dataset["n"]);
-                            var div = document.createElement("div");
-                            var h1 = document.createElement("h1");
-                            h1.innerText = songs[chosen].name;
-                            div.appendChild(h1);
-                            var h3 = document.createElement("h3");
-                            h3.innerText = "\u96BE\u5EA6\uFF1A".concat(songs[chosen].difficulty);
-                            div.appendChild(h3);
-                            var button = document.createElement("button");
-                            button.innerText = "开始";
-                            div.appendChild(button);
-                            document.getElementById("operation").innerHTML = div.innerHTML;
-                        };
-                        songList.appendChild(li);
-                        //songList.appendChild(document.createElement("br"))
-                    }
-                    document.addEventListener("click", function (e) {
-                        if (e.target instanceof HTMLButtonElement) {
-                            console.log("Redirecting...");
-                            window.location.replace("./player.html?id=".concat(songs[chosen].id));
+                    _c.sent();
+                    song_name = "<Unknown>";
+                    songs.forEach(function (e) {
+                        if (e.id == id) {
+                            song_name = e.name;
                         }
+                    });
+                    document.getElementById("name").innerText = song_name;
+                    document.getElementById("mcnum").innerText = max_combo;
+                    document.getElementById("pnum").innerText = perfect;
+                    document.getElementById("gnum").innerText = good;
+                    document.getElementById("mnum").innerText = miss;
+                    document.getElementById("point").innerText = point;
+                    p = parseInt(point);
+                    rating = "F";
+                    if (p >= 100000) {
+                        rating = "∀";
+                    }
+                    else if (p >= 96000) {
+                        rating = "S";
+                    }
+                    else if (p >= 90000) {
+                        rating = "A";
+                    }
+                    else if (p >= 84000) {
+                        rating = "B";
+                    }
+                    else if (p >= 80000) {
+                        rating = "C";
+                    }
+                    else if (p >= 75000) {
+                        rating = "D";
+                    }
+                    else if (p >= 70000) {
+                        rating = "E";
+                    }
+                    document.getElementById("lvl").innerText = rating;
+                    (_a = document.getElementById("again")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", function (e) {
+                        location.replace("./player.html?id=".concat(id));
+                    });
+                    (_b = document.getElementById("next")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", function (e) {
+                        location.replace("./selector.html");
                     });
                     return [2 /*return*/];
             }

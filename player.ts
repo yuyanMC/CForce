@@ -37,12 +37,18 @@ var notes:Array<Note>=new Array();
 var animationNotes:Array<Note>=new Array();
 var tick:number=0;
 var tps:number=100;
-var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined}>,bgsound:string}|null=null;
+var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined}>,bgsound:string,length:number}|null=null;
 var autoPlay:boolean=false;
 var combo:number=0;
 var sound_hit:HTMLAudioElement|null=null;
 var sound_bg:HTMLAudioElement|null=null;
 var base_volume=0.2;
+var points_got=0;
+var points_total=0;
+var notes_total=0;
+var max_combo=0;
+var perfect=0;
+var good=0;
 const bus = new EventBus<{
     hit: number,
     miss: null,
@@ -61,7 +67,7 @@ interface IPath{
 }
 class Path{
     spd:number;
-    constructor(_spd) {
+    constructor(_spd: number) {
         this.spd=_spd;
     }
     cal(t: number){
@@ -71,7 +77,7 @@ class Path{
 class StaticPath extends Path{
     x:number;
     y:number;
-    constructor(_spd,_x: number,_y: number){
+    constructor(_spd: number,_x: number,_y: number){
         super(_spd);
         this.x=_x;
         this.y=_y;
@@ -85,7 +91,7 @@ class LinePath extends Path{
     fy:number;
     tx:number;
     ty:number;
-    constructor(_spd,_fx: number,_fy: number,_tx:number,_ty:number){
+    constructor(_spd: number,_fx: number,_fy: number,_tx:number,_ty:number){
         super(_spd);
         this.fx=_fx;
         this.fy=_fy;
@@ -103,7 +109,7 @@ class ArcPath extends Path{
     fromy:number;
     tox:number;
     toy:number;
-    constructor(_spd,_cx: number,_cy: number,_fx: number,_fy: number,_tx=1600,_ty=900){
+    constructor(_spd: number,_cx: number,_cy: number,_fx: number,_fy: number,_tx=1600,_ty=900){
         super(_spd);
         if((_fx-_cx)**2+(_fy-_cy)**2-(_tx-_cx)**2-(_ty-_cy)**2>=0.01){
             throw Error(`Invalid ArcPath for(${_cx} ${_cy} ${_fx} ${_fy} ${_tx} ${_ty})`);
@@ -131,13 +137,13 @@ class ArcPath extends Path{
 }
 class SubscriberPath extends Path{
     p:Path;
-    constructor(_p){
+    constructor(_p: Path){
         super(_p.spd);
         this.p=_p;
     }
 }
 class Pow2SPath extends SubscriberPath{
-    constructor(_p){
+    constructor(_p: Path){
         super(_p);
     }
     cal(t: number): number[] {
@@ -145,7 +151,7 @@ class Pow2SPath extends SubscriberPath{
     }
 }
 class ReversePow2SPath extends SubscriberPath{
-    constructor(_p){
+    constructor(_p: Path){
         super(_p);
     }
     cal(t: number): number[] {
@@ -183,7 +189,6 @@ class MultiPath extends Path{
 class Note{
     p:Path;
     h:number;
-    spd:number;
     a:number;
     aa:number;
     ho:number|undefined;
@@ -193,9 +198,11 @@ class Note{
         this.p=_p;
         this.h=_h;
         this.t=_t;
+        this.a=0;
+        this.aa=0;
     }
 }
-function getQueryString(name) {
+function getQueryString(name: string) {
     let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
     let r = window.location.search.substr(1).match(reg);
     if (r != null) {
@@ -203,7 +210,7 @@ function getQueryString(name) {
     };
     return null;
 }
-function angcalc(cx,cy,ax,ay){
+function angcalc(cx: number,cy: number,ax: number,ay: number){
     if(ay==cy){
         return Math.PI;
     }
@@ -268,6 +275,9 @@ function drawTexts(){
     ctx.textAlign="center";
     ctx.fillText(`${combo}`,1600,60);
     ctx.fillText(`COMBO`,1600,120);
+    ctx.textAlign="right";
+    ctx.fillText(`Point: ${(points_got/points_total*100000).toFixed(0)}`,3150,60);
+    ctx.fillText(`Music: ${(tick/tps/song!.length*100).toFixed(2)}%`,3150,120);
 }
 function parsePath(n:IPath){
     let ep=n;
@@ -315,6 +325,8 @@ function parseSong(){
         n.ho=element.ho;
         animationNotes.push(n);
     });
+    points_total=song.notes.length*100;
+    notes_total=song.notes.length;
 }
 async function nextFrame(){
     await new Promise(function(f){setTimeout(function(){f(0)},1000/tps)});
@@ -338,27 +350,39 @@ async function main(){
         sound_hit!.pause();
         sound_hit!.fastSeek(0);
         sound_hit!.play();
+        if(e==1){
+            points_got+=100;
+            perfect+=1;
+        }else if(e==2){
+            points_got+=75;
+            good+=1;
+        }
     });
     bus.on("miss",function(e){
         combo=0;
     })
     document.addEventListener("keydown",(e)=>{
-        console.log(e);
+        let fetched=false;
         if(e.keyCode==65){
             notes.forEach((element)=>{
                 if(element.a||element.t!="A"){
                     return;
                 }
                 if(Math.abs(element.h*tps-tick)<=0.04*tps){
+                    fetched=true;
                     element.a=1;
                     element.aa=1;
                     bus.emit("hit",1);
                 }else if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                    fetched=true;
                     element.a=2;
                     element.aa=1;
                     bus.emit("hit",2);
                 }
             });
+            if(!fetched){
+                bus.emit("miss",null);
+            }
         }
         if(e.keyCode==76){
             notes.forEach((element)=>{
@@ -366,26 +390,31 @@ async function main(){
                     return;
                 }
                 if(Math.abs(element.h*tps-tick)<=0.04*tps){
+                    fetched=true;
                     element.a=1;
                     element.aa=1;
                     bus.emit("hit",1);
                 }else if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                    fetched=true;
                     element.a=2;
                     element.aa=1;
                     bus.emit("hit",2);
                 }
             });
+            if(!fetched){
+                bus.emit("miss",null);
+            }
         }
     });
-    let dataFile=getQueryString("datafile");
-    if(dataFile==null){
+    let id=getQueryString("id");
+    if(id==null){
         ctx.fillStyle="rgb(0,0,0)";
         ctx.fillRect(0,0,3200,1800);
         ctx.fillStyle="rgb(200,200,200)";
         ctx.fillText("游戏加载错误，请尝试刷新",1600,900);
         throw new Error("No data file given.");
     }
-    await fetch(dataFile).then(async (response) => song=await response.json());
+    await fetch(`./${id}.json`).then(async (response) => song=await response.json());
     sound_hit=new Audio("./hit.mp3");
     if(song!.bgsound){
         sound_bg=new Audio(song!.bgsound);
@@ -439,5 +468,9 @@ async function main(){
         });
         drawTexts();
         await nextFrame();
+        if(tick/tps>=song!.length){
+            location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got/points_total*100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total-perfect-good}`);
+            await new Promise((r)=>{});
+        }
     }
 }

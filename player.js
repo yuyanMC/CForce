@@ -108,6 +108,12 @@ var combo = 0;
 var sound_hit = null;
 var sound_bg = null;
 var base_volume = 0.2;
+var points_got = 0;
+var points_total = 0;
+var notes_total = 0;
+var max_combo = 0;
+var perfect = 0;
+var good = 0;
 var bus = new EventBus();
 var Path = /** @class */ (function () {
     function Path(_spd) {
@@ -242,6 +248,8 @@ var Note = /** @class */ (function () {
         this.p = _p;
         this.h = _h;
         this.t = _t;
+        this.a = 0;
+        this.aa = 0;
     }
     return Note;
 }());
@@ -323,6 +331,9 @@ function drawTexts() {
     ctx.textAlign = "center";
     ctx.fillText("".concat(combo), 1600, 60);
     ctx.fillText("COMBO", 1600, 120);
+    ctx.textAlign = "right";
+    ctx.fillText("Point: ".concat((points_got / points_total * 100000).toFixed(0)), 3150, 60);
+    ctx.fillText("Music: ".concat((tick / tps / song.length * 100).toFixed(2), "%"), 3150, 120);
 }
 function parsePath(n) {
     var ep = n;
@@ -370,6 +381,8 @@ function parseSong() {
         n.ho = element.ho;
         animationNotes.push(n);
     });
+    points_total = song.notes.length * 100;
+    notes_total = song.notes.length;
 }
 function nextFrame() {
     return __awaiter(this, void 0, void 0, function () {
@@ -388,7 +401,7 @@ function nextFrame() {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var canvas, dataFile;
+        var canvas, id;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -408,28 +421,41 @@ function main() {
                         sound_hit.pause();
                         sound_hit.fastSeek(0);
                         sound_hit.play();
+                        if (e == 1) {
+                            points_got += 100;
+                            perfect += 1;
+                        }
+                        else if (e == 2) {
+                            points_got += 75;
+                            good += 1;
+                        }
                     });
                     bus.on("miss", function (e) {
                         combo = 0;
                     });
                     document.addEventListener("keydown", function (e) {
-                        console.log(e);
+                        var fetched = false;
                         if (e.keyCode == 65) {
                             notes.forEach(function (element) {
                                 if (element.a || element.t != "A") {
                                     return;
                                 }
                                 if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
+                                    fetched = true;
                                     element.a = 1;
                                     element.aa = 1;
                                     bus.emit("hit", 1);
                                 }
                                 else if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
+                                    fetched = true;
                                     element.a = 2;
                                     element.aa = 1;
                                     bus.emit("hit", 2);
                                 }
                             });
+                            if (!fetched) {
+                                bus.emit("miss", null);
+                            }
                         }
                         if (e.keyCode == 76) {
                             notes.forEach(function (element) {
@@ -437,27 +463,32 @@ function main() {
                                     return;
                                 }
                                 if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
+                                    fetched = true;
                                     element.a = 1;
                                     element.aa = 1;
                                     bus.emit("hit", 1);
                                 }
                                 else if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
+                                    fetched = true;
                                     element.a = 2;
                                     element.aa = 1;
                                     bus.emit("hit", 2);
                                 }
                             });
+                            if (!fetched) {
+                                bus.emit("miss", null);
+                            }
                         }
                     });
-                    dataFile = getQueryString("datafile");
-                    if (dataFile == null) {
+                    id = getQueryString("id");
+                    if (id == null) {
                         ctx.fillStyle = "rgb(0,0,0)";
                         ctx.fillRect(0, 0, 3200, 1800);
                         ctx.fillStyle = "rgb(200,200,200)";
                         ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
                         throw new Error("No data file given.");
                     }
-                    return [4 /*yield*/, fetch(dataFile).then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                    return [4 /*yield*/, fetch("./".concat(id, ".json")).then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, response.json()];
                                 case 1: return [2 /*return*/, song = _a.sent()];
@@ -494,7 +525,7 @@ function main() {
                     sound_bg.play();
                     _a.label = 3;
                 case 3:
-                    if (!true) return [3 /*break*/, 5];
+                    if (!true) return [3 /*break*/, 7];
                     //drawnote(centerNote);
                     animationNotes.forEach(function (element) {
                         if (element.a) {
@@ -531,8 +562,14 @@ function main() {
                     return [4 /*yield*/, nextFrame()];
                 case 4:
                     _a.sent();
-                    return [3 /*break*/, 3];
-                case 5: return [2 /*return*/];
+                    if (!(tick / tps >= song.length)) return [3 /*break*/, 6];
+                    location.replace("./finish.html?i=".concat(id, "&c=").concat(max_combo, "&t=").concat((points_got / points_total * 100000).toFixed(0), "&p=").concat(perfect, "&g=").concat(good, "&m=").concat(notes_total - perfect - good));
+                    return [4 /*yield*/, new Promise(function (r) { })];
+                case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6: return [3 /*break*/, 3];
+                case 7: return [2 /*return*/];
             }
         });
     });
