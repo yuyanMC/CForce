@@ -101,11 +101,12 @@ var ctx;
 var notes = new Array();
 var animationNotes = new Array();
 var tick = 0;
-var tps = 100;
+var tps = 144;
 var song = null;
 var autoPlay = false;
 var combo = 0;
 var sound_hit = null;
+var sound_hit_manager = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 var sound_bg = null;
 var base_volume = 0.2;
 var points_got = 0;
@@ -295,7 +296,19 @@ function drawnote(note) {
     ctx.stroke();
 }
 function drawA(note) {
-    if (note.a == 11 && note.aa < note.ho * tps) {
+    if (note.a == 12 && note.aa < note.ho * tps) {
+        var np = note.p.cal(0);
+        var rc = note.aa / note.hi / tps + 1;
+        ctx.fillStyle = "rgba(64,64,64,".concat(rc - 1);
+        ctx.beginPath();
+        ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,".concat(rc - 1, ")");
+        ctx.beginPath();
+        ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
+        ctx.stroke();
+    }
+    else if (note.a == 11 && note.aa < note.ho * tps) {
         var np = note.p.cal(1);
         var rc = note.aa / note.ho / tps + 1;
         ctx.fillStyle = "rgba(64,64,64,".concat(2 - rc);
@@ -379,6 +392,7 @@ function parseSong() {
         var p = new MultiPath(ps);
         var n = new Note(p, element.h, "M");
         n.ho = element.ho;
+        n.hi = element.hi;
         animationNotes.push(n);
     });
     points_total = song.notes.length * 100;
@@ -401,7 +415,7 @@ function nextFrame() {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var canvas, id;
+        var canvas, id, i;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -416,11 +430,7 @@ function main() {
                     ctx.fillText("游戏正在加载", 1600, 900);
                     bus.on("hit", function (e) {
                         combo++;
-                    });
-                    bus.on("hit", function (e) {
-                        sound_hit.pause();
-                        sound_hit.fastSeek(0);
-                        sound_hit.play();
+                        max_combo = Math.max(combo, max_combo);
                         if (e == 1) {
                             points_got += 100;
                             perfect += 1;
@@ -428,6 +438,16 @@ function main() {
                         else if (e == 2) {
                             points_got += 75;
                             good += 1;
+                        }
+                    });
+                    bus.on("hit", function (e) {
+                        for (var i = 0; i < 16; i++) {
+                            if (Date.now() > sound_hit_manager[i]) {
+                                sound_hit[i].play();
+                                sound_hit_manager[i] = Date.now() + 200;
+                                console.log("Playing hit ".concat(i));
+                                break;
+                            }
                         }
                     });
                     bus.on("miss", function (e) {
@@ -496,21 +516,47 @@ function main() {
                         }); }); })];
                 case 1:
                     _a.sent();
-                    sound_hit = new Audio("./hit.mp3");
+                    if (song == undefined) {
+                        ctx.fillStyle = "rgb(0,0,0)";
+                        ctx.fillRect(0, 0, 3200, 1800);
+                        ctx.fillStyle = "rgb(200,200,200)";
+                        ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+                        throw new Error("Data file has nothing or corrupted or not exist.");
+                    }
+                    if (!song.script) return [3 /*break*/, 3];
+                    return [4 /*yield*/, fetch("./".concat(song.script)).then(function (response) { return __awaiter(_this, void 0, void 0, function () { var _a; return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    _a = eval;
+                                    return [4 /*yield*/, response.text()];
+                                case 1: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
+                            }
+                        }); }); })];
+                case 2:
+                    _a.sent();
+                    _a.label = 3;
+                case 3:
+                    sound_hit = [];
+                    for (i = 0; i < 16; i++) {
+                        sound_hit.push(new Audio("./hit.mp3"));
+                    }
                     if (song.bgsound) {
                         sound_bg = new Audio(song.bgsound);
                     }
                     else {
                         sound_bg = new Audio("./blank.mp3");
                     }
-                    return [4 /*yield*/, new Promise(function (r) { var t = setInterval(function () { if (sound_hit.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                    return [4 /*yield*/, new Promise(function (r) { var t = setInterval(function () { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
                             clearInterval(t);
                             r(null);
                         } }, 100); })];
-                case 2:
+                case 4:
                     _a.sent();
                     sound_bg.volume = 0.5 * base_volume;
-                    sound_hit.volume = 1 * base_volume;
+                    sound_hit.forEach(function (e) {
+                        e.volume = 1 * base_volume;
+                    });
+                    sound_hit[0].currentTime;
                     parseSong();
                     ctx.fillStyle = "rgb(0,0,0)";
                     ctx.fillRect(0, 0, 3200, 1800);
@@ -522,13 +568,23 @@ function main() {
                     notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
                     */
                     //drawnote(new Note(new StaticPath(800,450),0,3600));
-                    sound_bg.play();
-                    _a.label = 3;
-                case 3:
-                    if (!true) return [3 /*break*/, 7];
+                    try {
+                        sound_bg.play();
+                    }
+                    catch (de) {
+                        alert("请打开“允许音频自动播放”，然后刷新");
+                    }
+                    _a.label = 5;
+                case 5:
+                    if (!true) return [3 /*break*/, 9];
                     //drawnote(centerNote);
+                    bus.emit("tick", tick / tps);
                     animationNotes.forEach(function (element) {
-                        if (element.a) {
+                        if (element.a == 12 && element.aa + 1 > element.hi * tps) {
+                            element.a = 0;
+                            element.aa = 0;
+                        }
+                        else if (element.a) {
                             element.aa++;
                         }
                         else if (Math.abs(element.h * tps - tick) <= 1) {
@@ -536,6 +592,10 @@ function main() {
                                 element.a = 11;
                                 element.aa = 1;
                             }
+                        }
+                        else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) * tps - tick) <= 1) {
+                            element.a = 12;
+                            element.aa = 1;
                         }
                         drawnote(element);
                         drawA(element);
@@ -560,16 +620,16 @@ function main() {
                     });
                     drawTexts();
                     return [4 /*yield*/, nextFrame()];
-                case 4:
+                case 6:
                     _a.sent();
-                    if (!(tick / tps >= song.length)) return [3 /*break*/, 6];
+                    if (!(tick / tps >= song.length)) return [3 /*break*/, 8];
                     location.replace("./finish.html?i=".concat(id, "&c=").concat(max_combo, "&t=").concat((points_got / points_total * 100000).toFixed(0), "&p=").concat(perfect, "&g=").concat(good, "&m=").concat(notes_total - perfect - good));
                     return [4 /*yield*/, new Promise(function (r) { })];
-                case 5:
+                case 7:
                     _a.sent();
-                    _a.label = 6;
-                case 6: return [3 /*break*/, 3];
-                case 7: return [2 /*return*/];
+                    _a.label = 8;
+                case 8: return [3 /*break*/, 5];
+                case 9: return [2 /*return*/];
             }
         });
     });

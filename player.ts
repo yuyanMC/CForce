@@ -36,11 +36,12 @@ var ctx:CanvasRenderingContext2D;
 var notes:Array<Note>=new Array();
 var animationNotes:Array<Note>=new Array();
 var tick:number=0;
-var tps:number=100;
-var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined}>,bgsound:string,length:number}|null=null;
+var tps:number=144;
+var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined}>,bgsound:string,length:number,script:string|undefined}|null=null;
 var autoPlay:boolean=false;
 var combo:number=0;
-var sound_hit:HTMLAudioElement|null=null;
+var sound_hit:Array<HTMLAudioElement>|null=null;
+var sound_hit_manager:Array<number>=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 var sound_bg:HTMLAudioElement|null=null;
 var base_volume=0.2;
 var points_got=0;
@@ -52,6 +53,7 @@ var good=0;
 const bus = new EventBus<{
     hit: number,
     miss: null,
+    tick: number,
 }>();
 interface IPath{
     type:string;
@@ -192,6 +194,7 @@ class Note{
     a:number;
     aa:number;
     ho:number|undefined;
+    hi:number|undefined;
     t:"A"|"B"|"M";
 
     constructor(_p: Path,_h: number,_t: "A"|"B"|"M"){
@@ -241,7 +244,18 @@ function drawnote(note:Note){
     ctx.stroke();
 }
 function drawA(note:Note){
-    if(note.a==11&&note.aa<note.ho!*tps){
+    if(note.a==12&&note.aa<note.ho!*tps){
+        let np=note.p.cal(0);
+        let rc=note.aa/note.hi!/tps+1;
+        ctx.fillStyle=`rgba(64,64,64,${rc-1}`;
+        ctx.beginPath();
+        ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
+        ctx.fill();
+        ctx.strokeStyle=`rgba(255,255,255,${rc-1})`;
+        ctx.beginPath();
+        ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
+        ctx.stroke();
+    }else if(note.a==11&&note.aa<note.ho!*tps){
         let np=note.p.cal(1);
         let rc=note.aa/note.ho!/tps+1;
         ctx.fillStyle=`rgba(64,64,64,${2-rc}`;
@@ -323,6 +337,7 @@ function parseSong(){
         let p:Path=new MultiPath(ps);
         let n:Note=new Note(p,element.h,"M");
         n.ho=element.ho;
+        n.hi=element.hi;
         animationNotes.push(n);
     });
     points_total=song.notes.length*100;
@@ -345,17 +360,23 @@ async function main(){
     ctx.fillText("游戏正在加载",1600,900);
     bus.on("hit",function(e) {
         combo++;
-    });
-    bus.on("hit",function(e) {
-        sound_hit!.pause();
-        sound_hit!.fastSeek(0);
-        sound_hit!.play();
+        max_combo=Math.max(combo,max_combo);
         if(e==1){
             points_got+=100;
             perfect+=1;
         }else if(e==2){
             points_got+=75;
             good+=1;
+        }
+    });
+    bus.on("hit",function(e) {
+        for(let i=0;i<16;i++){
+            if(Date.now()>sound_hit_manager[i]){
+                sound_hit![i].play();
+                sound_hit_manager[i]=Date.now()+200;
+                console.log(`Playing hit ${i}`);
+                break;
+            }
         }
     });
     bus.on("miss",function(e){
@@ -415,15 +436,31 @@ async function main(){
         throw new Error("No data file given.");
     }
     await fetch(`./${id}.json`).then(async (response) => song=await response.json());
-    sound_hit=new Audio("./hit.mp3");
+    if(song==undefined){
+        ctx.fillStyle="rgb(0,0,0)";
+        ctx.fillRect(0,0,3200,1800);
+        ctx.fillStyle="rgb(200,200,200)";
+        ctx.fillText("游戏加载错误，请尝试刷新",1600,900);
+        throw new Error("Data file has nothing or corrupted or not exist.");
+    }
+    if(song.script){
+        await fetch(`./${song.script}`).then(async(response)=>eval(await response.text()));
+    }
+    sound_hit=[];
+    for(let i=0;i<16;i++){
+        sound_hit.push(new Audio("./hit.mp3"));
+    }
     if(song!.bgsound){
         sound_bg=new Audio(song!.bgsound);
     }else{
         sound_bg=new Audio("./blank.mp3");
     }
-    await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},100);});
+    await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit![0].readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},100);});
     sound_bg.volume=0.5*base_volume;
-    sound_hit.volume=1*base_volume;
+    sound_hit.forEach(e=>{
+        e.volume=1*base_volume;
+    });
+    sound_hit[0].currentTime
     parseSong();
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
@@ -435,17 +472,28 @@ async function main(){
     notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
     */
     //drawnote(new Note(new StaticPath(800,450),0,3600));
-    sound_bg.play();
+    try{
+        sound_bg.play();
+    }catch(de){
+        alert("请打开“允许音频自动播放”，然后刷新");
+    }
     while(true){
         //drawnote(centerNote);
+        bus.emit("tick",tick/tps);
         animationNotes.forEach(element=>{
-            if(element.a){
+            if(element.a==12&&element.aa+1>element.hi!*tps){
+                element.a=0;
+                element.aa=0;
+            }else if(element.a){
                 element.aa++;
             }else if(Math.abs(element.h*tps-tick)<=1){
                 if(element.ho){
                     element.a=11;
                     element.aa=1;
                 }
+            }else if(element.hi!=undefined&&Math.abs((element.h-element.p.spd-element.hi)*tps-tick)<=1){
+                element.a=12;
+                element.aa=1;
             }
             drawnote(element);
             drawA(element);
