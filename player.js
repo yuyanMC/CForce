@@ -245,10 +245,11 @@ var MultiPath = /** @class */ (function (_super) {
     return MultiPath;
 }(Path));
 var Note = /** @class */ (function () {
-    function Note(_p, _h, _t) {
+    function Note(_p, _h, _t, _y) {
         this.p = _p;
         this.h = _h;
         this.t = _t;
+        this.y = _y;
         this.a = 0;
         this.aa = 0;
     }
@@ -382,7 +383,7 @@ function parseSong() {
             ps.push(parsePath(pe));
         });
         var p = new MultiPath(ps);
-        notes.push(new Note(p, element.h, element.track));
+        notes.push(new Note(p, element.h, element.track, element.type));
     });
     song.animationNotes.forEach(function (element) {
         var ps = [];
@@ -390,7 +391,7 @@ function parseSong() {
             ps.push(parsePath(pe));
         });
         var p = new MultiPath(ps);
-        var n = new Note(p, element.h, "M");
+        var n = new Note(p, element.h, "M", element.type);
         n.ho = element.ho;
         n.hi = element.hi;
         animationNotes.push(n);
@@ -460,13 +461,13 @@ function main() {
                                 if (element.a || element.t != "A") {
                                     return;
                                 }
-                                if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
+                                if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
                                     fetched = true;
                                     element.a = 1;
                                     element.aa = 1;
                                     bus.emit("hit", 1);
                                 }
-                                else if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
+                                else if (Math.abs(element.h * tps - tick) <= 0.15 * tps) {
                                     fetched = true;
                                     element.a = 2;
                                     element.aa = 1;

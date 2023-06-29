@@ -2,6 +2,7 @@
     "notes":[
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -15,6 +16,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -28,6 +30,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -41,6 +44,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -54,6 +58,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -67,6 +72,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -80,6 +86,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -93,6 +100,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -106,6 +114,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -119,6 +128,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -132,6 +142,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -145,6 +156,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -158,6 +170,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -171,6 +184,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -184,6 +198,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -197,6 +212,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -210,6 +226,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -223,6 +240,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -236,6 +254,7 @@
         },
         {
             "track":"A",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -249,6 +268,7 @@
         },
         {
             "track":"B",
+            "type":"I",
             "paths":[
                 {
                     "type":"arc",
@@ -263,6 +283,7 @@
     ],
     "animationNotes":[
         {
+            "type":"I",
             "paths":[
                 {
                     "type":"static",

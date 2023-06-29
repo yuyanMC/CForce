@@ -37,7 +37,7 @@ var notes:Array<Note>=new Array();
 var animationNotes:Array<Note>=new Array();
 var tick:number=0;
 var tps:number=144;
-var song:{notes:Array<{track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined}>,bgsound:string,length:number,script:string|undefined}|null=null;
+var song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined}>,bgsound:string,length:number,script:string|undefined}|null=null;
 var autoPlay:boolean=false;
 var combo:number=0;
 var sound_hit:Array<HTMLAudioElement>|null=null;
@@ -196,11 +196,13 @@ class Note{
     ho:number|undefined;
     hi:number|undefined;
     t:"A"|"B"|"M";
+    y:"I"|"A";
 
-    constructor(_p: Path,_h: number,_t: "A"|"B"|"M"){
+    constructor(_p: Path,_h: number,_t: "A"|"B"|"M",_y:"I"|"A"){
         this.p=_p;
         this.h=_h;
         this.t=_t;
+        this.y=_y;
         this.a=0;
         this.aa=0;
     }
@@ -327,7 +329,7 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        notes.push(new Note(p,element.h,element.track));
+        notes.push(new Note(p,element.h,element.track,element.type));
     });
     song.animationNotes.forEach(element => {
         let ps:Array<Path>=[];
@@ -335,7 +337,7 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        let n:Note=new Note(p,element.h,"M");
+        let n:Note=new Note(p,element.h,"M",element.type);
         n.ho=element.ho;
         n.hi=element.hi;
         animationNotes.push(n);
@@ -389,12 +391,12 @@ async function main(){
                 if(element.a||element.t!="A"){
                     return;
                 }
-                if(Math.abs(element.h*tps-tick)<=0.04*tps){
+                if(Math.abs(element.h*tps-tick)<=0.08*tps){
                     fetched=true;
                     element.a=1;
                     element.aa=1;
                     bus.emit("hit",1);
-                }else if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                }else if(Math.abs(element.h*tps-tick)<=0.15*tps){
                     fetched=true;
                     element.a=2;
                     element.aa=1;

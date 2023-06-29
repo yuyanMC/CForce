@@ -1,6 +1,7 @@
 {
     "notes":[
         {
+            "type":"I",
             "track":"A",
             "paths":[
                 {
@@ -48,6 +49,7 @@
             "h":20
         },
         {
+            "type":"I",
             "track":"B",
             "paths":[
                 {
@@ -97,6 +99,7 @@
     ],
     "animationNotes":[
         {
+            "type":"I",
             "paths":[
                 {
                     "type":"static",
@@ -127,6 +130,7 @@
             "hi":0.5
         },
         {
+            "type":"I",
             "paths":[
                 {
                     "type":"pow2",
