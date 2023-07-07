@@ -2,7 +2,7 @@
     "notes":[
         {
             "track":"A",
-            "type":"I",
+            "type":"A",
             "paths":[
                 {
                     "type":"arc",
@@ -12,7 +12,8 @@
                     "spd":1
                 }
             ],
-            "h":2
+            "h":2,
+            "al":2
         },
         {
             "track":"B",

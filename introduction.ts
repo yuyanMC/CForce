@@ -1,9 +1,3 @@
-function renderText(text:string,x:number,y:number,align:CanvasTextAlign="left",fontSize:number=50,alpha:number=1){
-    ctx.fillStyle=`rgba(255,255,255,${alpha})`;
-    ctx.font=`${fontSize}px 'Courier New'`;
-    ctx.textAlign=align;
-    ctx.fillText(text,x,y);
-}
 bus.on("tick",t=>{
     if(t>=0&&t<=5){
         renderText("欢迎来到CForce的新手教程！",1600,900,"center",50,(t<1?t:t>4?5-t:1));

@@ -13,5 +13,10 @@
         "id":"阴游",
         "name":"阴游",
         "difficulty":8
+    },
+    {
+        "id":"timer",
+        "name":"调试-时间准度",
+        "difficulty":42
     }
 ]

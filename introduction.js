@@ -1,13 +1,4 @@
-function renderText(text, x, y, align, fontSize, alpha) {
-    if (align === void 0) { align = "left"; }
-    if (fontSize === void 0) { fontSize = 50; }
-    if (alpha === void 0) { alpha = 1; }
-    ctx.fillStyle = "rgba(255,255,255,".concat(alpha, ")");
-    ctx.font = "".concat(fontSize, "px 'Courier New'");
-    ctx.textAlign = align;
-    ctx.fillText(text, x, y);
-}
-bus.on("tick", function (t) {
+bus.on("tick", t => {
     if (t >= 0 && t <= 5) {
         renderText("欢迎来到CForce的新手教程！", 1600, 900, "center", 50, (t < 1 ? t : t > 4 ? 5 - t : 1));
     }

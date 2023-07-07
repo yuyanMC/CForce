@@ -35,10 +35,10 @@ class EventBus<Events extends Record<string, any>> {
 var ctx:CanvasRenderingContext2D;
 var notes:Array<Note>=new Array();
 var animationNotes:Array<Note>=new Array();
-var tick:number=0;
+//var tick:number=0; // @deprecated @unused
 var tps:number=144;
-var song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined}>,bgsound:string,length:number,script:string|undefined}|null=null;
-var autoPlay:boolean=false;
+var song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number,al?:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined,al?:number}>,bgsound:string,length:number,script:string|undefined}|null=null;
+var autoPlay:boolean=true;
 var combo:number=0;
 var sound_hit:Array<HTMLAudioElement>|null=null;
 var sound_hit_manager:Array<number>=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -50,10 +50,18 @@ var notes_total=0;
 var max_combo=0;
 var perfect=0;
 var good=0;
+var paused=false;
+var tickPerSec=0;
+var trueTps=0;
+var debug=true;
+var startTime=Date.now();
+var sec=0;
+var paused_time=0;
 const bus = new EventBus<{
     hit: number,
     miss: null,
     tick: number,
+    start: null,
 }>();
 interface IPath{
     type:string;
@@ -72,7 +80,7 @@ class Path{
     constructor(_spd: number) {
         this.spd=_spd;
     }
-    cal(t: number){
+    cal(t: number): [number,number]{
         return [0,0];
     }
 }
@@ -84,7 +92,7 @@ class StaticPath extends Path{
         this.x=_x;
         this.y=_y;
     }
-    cal(t: number){
+    cal(t: number): [number,number]{
         return [this.x,this.y];
     }
 }
@@ -100,7 +108,7 @@ class LinePath extends Path{
         this.tx=_tx;
         this.ty=_ty;
     }
-    cal(t: number){
+    cal(t: number): [number,number]{
         return [this.fx+(this.tx-this.fx)*t,this.fy+(this.ty-this.fy)*t];
     }
 }
@@ -123,7 +131,7 @@ class ArcPath extends Path{
         this.tox=_tx;
         this.toy=_ty;
     }
-    cal(t: number){
+    cal(t: number): [number,number]{
         if(t<0){
             return [this.fromx,this.fromy];
         }
@@ -148,7 +156,7 @@ class Pow2SPath extends SubscriberPath{
     constructor(_p: Path){
         super(_p);
     }
-    cal(t: number): number[] {
+    cal(t: number): [number,number] {
         return this.p.cal(t**2)
     }
 }
@@ -156,7 +164,7 @@ class ReversePow2SPath extends SubscriberPath{
     constructor(_p: Path){
         super(_p);
     }
-    cal(t: number): number[] {
+    cal(t: number): [number,number] {
         return this.p.cal((1-t)**2)
     }
 }
@@ -178,7 +186,7 @@ class MultiPath extends Path{
             this.ssp.push(nss/spdsum);
         });
     }
-    cal(t: number): number[] {
+    cal(t: number): [number,number] {
         for(let i=1;i<this.ssp.length;i++){
             if(t<this.ssp[i]){
                 let nt=(t-this.ssp[i-1])/(this.ssp[i]-this.ssp[i-1]);
@@ -197,15 +205,26 @@ class Note{
     hi:number|undefined;
     t:"A"|"B"|"M";
     y:"I"|"A";
+    al?:number;
 
-    constructor(_p: Path,_h: number,_t: "A"|"B"|"M",_y:"I"|"A"){
+    constructor(_p: Path,_h: number,_t: "A"|"B"|"M",_y:"I"|"A",_al?:number){
         this.p=_p;
         this.h=_h;
         this.t=_t;
         this.y=_y;
         this.a=0;
         this.aa=0;
+        if(this.y=="A"&&_al==undefined){
+            _al=0;
+        }
+        this.al=_al;
     }
+}
+function renderText(text:string,x:number,y:number,align:CanvasTextAlign="left",fontSize:number=50,alpha:number=1){
+    ctx.fillStyle=`rgba(255,255,255,${alpha})`;
+    ctx.font=`${fontSize}px 'Courier New'`;
+    ctx.textAlign=align;
+    ctx.fillText(text,x,y);
 }
 function getQueryString(name: string) {
     let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -225,7 +244,6 @@ function angcalc(cx: number,cy: number,ax: number,ay: number){
     return Math.PI/2-Math.atan((ax-cx)/(ay-cy));
 }
 function drawnote(note:Note){
-    let sec=tick/tps;
     if((sec-note.h+note.p.spd)/note.p.spd<0||(sec-note.h+note.p.spd)/note.p.spd>1){
         return;
     }
@@ -245,10 +263,30 @@ function drawnote(note:Note){
     ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
     ctx.stroke();
 }
+function drawClackLine(note:Note){
+    if(note.y!="A"){
+        return;
+    }
+    if((sec-note.h+note.p.spd)/note.p.spd<0||(sec-note.al!-note.h+note.p.spd)/note.p.spd>1){
+        return;
+    }
+    let np=note.p.cal((sec-note.h+note.p.spd)/note.p.spd);
+    ctx.moveTo(...np);
+    for(let i=0;i<=note.al!;i+=(1/tps)){
+        let t=(sec-i-note.h+note.p.spd)/note.p.spd;
+        t=Math.max(0,t);
+        t=Math.min(1,t);
+        np=note.p.cal(t);
+        ctx.strokeStyle="rgb(255,255,255)"
+        ctx.lineTo(...np);
+    }
+    ctx.stroke();
+}
 function drawA(note:Note){
-    if(note.a==12&&note.aa<note.ho!*tps){
+    let ad=sec-note.aa;
+    if(note.a==12&&ad<note.hi!){
         let np=note.p.cal(0);
-        let rc=note.aa/note.hi!/tps+1;
+        let rc=ad/note.hi!+1;
         ctx.fillStyle=`rgba(64,64,64,${rc-1}`;
         ctx.beginPath();
         ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
@@ -257,9 +295,9 @@ function drawA(note:Note){
         ctx.beginPath();
         ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
         ctx.stroke();
-    }else if(note.a==11&&note.aa<note.ho!*tps){
+    }else if(note.a==11&&ad<note.ho!){
         let np=note.p.cal(1);
-        let rc=note.aa/note.ho!/tps+1;
+        let rc=ad/note.ho!+1;
         ctx.fillStyle=`rgba(64,64,64,${2-rc}`;
         ctx.beginPath();
         ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
@@ -268,8 +306,8 @@ function drawA(note:Note){
         ctx.beginPath();
         ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
         ctx.stroke();
-    }else if(note.a>0&&note.aa*4<tps){
-        let rc=note.aa*4/tps+1;
+    }else if(note.a>0&&ad<0.25){
+        let rc=ad/0.25+1;
         let np=note.p.cal(1);
         if(note.a==1){
             ctx.fillStyle=`rgba(160,144,0,${2-rc})`;
@@ -286,14 +324,40 @@ function drawA(note:Note){
     }
 }
 function drawTexts(){
-    ctx.fillStyle="rgb(255,255,255)"
+    ctx.fillStyle="rgb(255,255,255)";
     ctx.font="50px 'Courier New'";
     ctx.textAlign="center";
     ctx.fillText(`${combo}`,1600,60);
     ctx.fillText(`COMBO`,1600,120);
     ctx.textAlign="right";
     ctx.fillText(`Point: ${(points_got/points_total*100000).toFixed(0)}`,3150,60);
-    ctx.fillText(`Music: ${(tick/tps/song!.length*100).toFixed(2)}%`,3150,120);
+    ctx.fillText(`Music: ${(sec/song!.length*100).toFixed(2)}%`,3150,120);
+    if(debug){
+        if((trueTps/tps)>=0.00){
+            ctx.fillStyle="rgb(255,0,255)";
+        }
+        if((trueTps/tps)>0.30){
+            ctx.fillStyle="rgb(255,0,63)";
+        }
+        if((trueTps/tps)>0.60){
+            ctx.fillStyle="rgb(255,0,0)";
+        }
+        if((trueTps/tps)>0.90){
+            ctx.fillStyle="rgb(255,127,0)";
+        }
+        if((trueTps/tps)>0.95){
+            ctx.fillStyle="rgb(255,255,0)";
+        }
+        if((trueTps/tps)>0.999){
+            ctx.fillStyle="rgb(0,255,0)";
+        }
+        if((trueTps/tps)>0.99999){
+            ctx.fillStyle="rgb(0,255,255)";
+        }
+        ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`,3150,180);
+        ctx.fillStyle="rgb(255,255,255)";
+        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now()-startTime)/1000).toFixed(3)}`,3150,240);
+    }
 }
 function parsePath(n:IPath){
     let ep=n;
@@ -329,7 +393,7 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        notes.push(new Note(p,element.h,element.track,element.type));
+        notes.push(new Note(p,element.h,element.track,element.type,element.al));
     });
     song.animationNotes.forEach(element => {
         let ps:Array<Path>=[];
@@ -337,7 +401,7 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        let n:Note=new Note(p,element.h,"M",element.type);
+        let n:Note=new Note(p,element.h,"M",element.type,element.al);
         n.ho=element.ho;
         n.hi=element.hi;
         animationNotes.push(n);
@@ -345,11 +409,9 @@ function parseSong(){
     points_total=song.notes.length*100;
     notes_total=song.notes.length;
 }
-async function nextFrame(){
-    await new Promise(function(f){setTimeout(function(){f(0)},1000/tps)});
+function nextFrame(){
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
-    tick++;
 }
 async function main(){
     var canvas:HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
@@ -383,6 +445,12 @@ async function main(){
     });
     bus.on("miss",function(e){
         combo=0;
+    });
+    bus.on("tick",function(e){
+        tickPerSec++;
+    });
+    bus.on("start",function(e){
+        startTime=Date.now();
     })
     document.addEventListener("keydown",(e)=>{
         let fetched=false;
@@ -391,12 +459,12 @@ async function main(){
                 if(element.a||element.t!="A"){
                     return;
                 }
-                if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                if(Math.abs(element.h-sec)<=0.08){
                     fetched=true;
                     element.a=1;
                     element.aa=1;
                     bus.emit("hit",1);
-                }else if(Math.abs(element.h*tps-tick)<=0.15*tps){
+                }else if(Math.abs(element.h-sec)<=0.16){
                     fetched=true;
                     element.a=2;
                     element.aa=1;
@@ -412,15 +480,15 @@ async function main(){
                 if(element.a||element.t!="B"){
                     return;
                 }
-                if(Math.abs(element.h*tps-tick)<=0.04*tps){
+                if(Math.abs(element.h-sec)<=0.08){
                     fetched=true;
                     element.a=1;
-                    element.aa=1;
+                    element.aa=sec;
                     bus.emit("hit",1);
-                }else if(Math.abs(element.h*tps-tick)<=0.08*tps){
+                }else if(Math.abs(element.h-sec)<=0.16){
                     fetched=true;
                     element.a=2;
-                    element.aa=1;
+                    element.aa=sec;
                     bus.emit("hit",2);
                 }
             });
@@ -457,12 +525,11 @@ async function main(){
     }else{
         sound_bg=new Audio("./blank.mp3");
     }
-    await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit![0].readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},100);});
+    await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit![0].readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},10);});
     sound_bg.volume=0.5*base_volume;
     sound_hit.forEach(e=>{
         e.volume=1*base_volume;
     });
-    sound_hit[0].currentTime
     parseSong();
     ctx.fillStyle="rgb(0,0,0)";
     ctx.fillRect(0,0,3200,1800);
@@ -474,40 +541,49 @@ async function main(){
     notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
     */
     //drawnote(new Note(new StaticPath(800,450),0,3600));
+    setInterval(function(){
+        trueTps=tickPerSec;
+        tickPerSec=0;
+    },1000);
     try{
         sound_bg.play();
     }catch(de){
         alert("请打开“允许音频自动播放”，然后刷新");
     }
-    while(true){
-        //drawnote(centerNote);
-        bus.emit("tick",tick/tps);
+    bus.emit("start",null);
+    let mainTimer=setInterval(async function(){
+        if(paused){
+            paused_time=(Date.now()-startTime)/1000-sec;
+            return;
+        }
+        nextFrame();
+        sec=(Date.now()-startTime)/1000-paused_time;
+        bus.emit("tick",sec);
         animationNotes.forEach(element=>{
-            if(element.a==12&&element.aa+1>element.hi!*tps){
+            if(element.a==12&&sec-element.aa>element.hi!){
                 element.a=0;
                 element.aa=0;
-            }else if(element.a){
-                element.aa++;
-            }else if(Math.abs(element.h*tps-tick)<=1){
+            }else if(Math.abs(element.h-sec)<=1.5/tps){
                 if(element.ho){
                     element.a=11;
-                    element.aa=1;
+                    element.aa=sec;
                 }
-            }else if(element.hi!=undefined&&Math.abs((element.h-element.p.spd-element.hi)*tps-tick)<=1){
+            }else if(element.hi!=undefined&&Math.abs((element.h-element.p.spd-element.hi)-sec)<=1.5/tps){
                 element.a=12;
-                element.aa=1;
+                element.aa=sec;
             }
             drawnote(element);
             drawA(element);
         });
         notes.forEach(element => {
-            if(element.a){
-                element.aa++;
-            }else if(autoPlay&&(Math.abs(element.h*tps-tick)<0.04*tps)){
+            drawClackLine(element);
+        });
+        notes.forEach(element => {
+            if(autoPlay&&!element.a&&(Math.abs(element.h-sec)<1.5/tps)){
                 element.a=1;
-                element.aa=1;
+                element.aa=sec;
                 bus.emit("hit",1);
-            }else if((tick-element.h*tps)>0.08*tps){
+            }else if((sec-element.h)>0.16&&!element.a){
                 element.a=-1;
                 bus.emit("miss",null);
             }
@@ -517,10 +593,9 @@ async function main(){
             drawA(element);
         });
         drawTexts();
-        await nextFrame();
-        if(tick/tps>=song!.length){
+        if(sec>=song!.length){
             location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got/points_total*100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total-perfect-good}`);
-            await new Promise((r)=>{});
+            clearInterval(mainTimer);
         }
-    }
+    },1000/tps);
 }

@@ -1,18 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,88 +7,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var EventBus = /** @class */ (function () {
-    function EventBus() {
+class EventBus {
+    constructor() {
         /** 保存 key => set 映射 */
         this.map = new Map();
     }
-    EventBus.prototype.on = function (name, handler) {
-        var set = this.map.get(name);
+    on(name, handler) {
+        let set = this.map.get(name);
         if (!set) {
             set = new Set();
             this.map.set(name, set);
         }
         set.add(handler);
-    };
-    EventBus.prototype.emit = function (name, value) {
-        var set = this.map.get(name);
+    }
+    emit(name, value) {
+        const set = this.map.get(name);
         if (!set)
             return;
-        var copied = __spreadArray([], __read(set), false);
-        copied.forEach(function (fn) { return fn(value); });
-    };
-    return EventBus;
-}());
+        const copied = [...set];
+        copied.forEach((fn) => fn(value));
+    }
+}
 // libEnd
 var ctx;
 var notes = new Array();
 var animationNotes = new Array();
-var tick = 0;
+//var tick:number=0; // @deprecated @unused
 var tps = 144;
 var song = null;
-var autoPlay = false;
+var autoPlay = true;
 var combo = 0;
 var sound_hit = null;
 var sound_hit_manager = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -115,149 +47,142 @@ var notes_total = 0;
 var max_combo = 0;
 var perfect = 0;
 var good = 0;
-var bus = new EventBus();
-var Path = /** @class */ (function () {
-    function Path(_spd) {
+var paused = false;
+var tickPerSec = 0;
+var trueTps = 0;
+var debug = true;
+var startTime = Date.now();
+var sec = 0;
+var paused_time = 0;
+const bus = new EventBus();
+class Path {
+    constructor(_spd) {
         this.spd = _spd;
     }
-    Path.prototype.cal = function (t) {
+    cal(t) {
         return [0, 0];
-    };
-    return Path;
-}());
-var StaticPath = /** @class */ (function (_super) {
-    __extends(StaticPath, _super);
-    function StaticPath(_spd, _x, _y) {
-        var _this = _super.call(this, _spd) || this;
-        _this.x = _x;
-        _this.y = _y;
-        return _this;
     }
-    StaticPath.prototype.cal = function (t) {
+}
+class StaticPath extends Path {
+    constructor(_spd, _x, _y) {
+        super(_spd);
+        this.x = _x;
+        this.y = _y;
+    }
+    cal(t) {
         return [this.x, this.y];
-    };
-    return StaticPath;
-}(Path));
-var LinePath = /** @class */ (function (_super) {
-    __extends(LinePath, _super);
-    function LinePath(_spd, _fx, _fy, _tx, _ty) {
-        var _this = _super.call(this, _spd) || this;
-        _this.fx = _fx;
-        _this.fy = _fy;
-        _this.tx = _tx;
-        _this.ty = _ty;
-        return _this;
     }
-    LinePath.prototype.cal = function (t) {
+}
+class LinePath extends Path {
+    constructor(_spd, _fx, _fy, _tx, _ty) {
+        super(_spd);
+        this.fx = _fx;
+        this.fy = _fy;
+        this.tx = _tx;
+        this.ty = _ty;
+    }
+    cal(t) {
         return [this.fx + (this.tx - this.fx) * t, this.fy + (this.ty - this.fy) * t];
-    };
-    return LinePath;
-}(Path));
-var ArcPath = /** @class */ (function (_super) {
-    __extends(ArcPath, _super);
-    function ArcPath(_spd, _cx, _cy, _fx, _fy, _tx, _ty) {
-        if (_tx === void 0) { _tx = 1600; }
-        if (_ty === void 0) { _ty = 900; }
-        var _this = _super.call(this, _spd) || this;
-        if (Math.pow((_fx - _cx), 2) + Math.pow((_fy - _cy), 2) - Math.pow((_tx - _cx), 2) - Math.pow((_ty - _cy), 2) >= 0.01) {
-            throw Error("Invalid ArcPath for(".concat(_cx, " ").concat(_cy, " ").concat(_fx, " ").concat(_fy, " ").concat(_tx, " ").concat(_ty, ")"));
-        }
-        _this.cx = _cx;
-        _this.cy = _cy;
-        _this.fromx = _fx;
-        _this.fromy = _fy;
-        _this.tox = _tx;
-        _this.toy = _ty;
-        return _this;
     }
-    ArcPath.prototype.cal = function (t) {
+}
+class ArcPath extends Path {
+    constructor(_spd, _cx, _cy, _fx, _fy, _tx = 1600, _ty = 900) {
+        super(_spd);
+        if ((_fx - _cx) ** 2 + (_fy - _cy) ** 2 - (_tx - _cx) ** 2 - (_ty - _cy) ** 2 >= 0.01) {
+            throw Error(`Invalid ArcPath for(${_cx} ${_cy} ${_fx} ${_fy} ${_tx} ${_ty})`);
+        }
+        this.cx = _cx;
+        this.cy = _cy;
+        this.fromx = _fx;
+        this.fromy = _fy;
+        this.tox = _tx;
+        this.toy = _ty;
+    }
+    cal(t) {
         if (t < 0) {
             return [this.fromx, this.fromy];
         }
         if (t > 1) {
             return [this.tox, this.toy];
         }
-        var ba = angcalc(this.cx, this.cy, this.fromx, this.fromy);
-        var ea = angcalc(this.cx, this.cy, this.tox, this.toy);
-        var ca = ba + (ea - ba) * t;
-        var r = Math.sqrt(Math.pow((this.tox - this.cx), 2) + Math.pow((this.toy - this.cy), 2));
+        let ba = angcalc(this.cx, this.cy, this.fromx, this.fromy);
+        let ea = angcalc(this.cx, this.cy, this.tox, this.toy);
+        let ca = ba + (ea - ba) * t;
+        let r = Math.sqrt((this.tox - this.cx) ** 2 + (this.toy - this.cy) ** 2);
         return [Math.cos(ca) * r + this.cx, Math.sin(ca) * r + this.cy];
-    };
-    return ArcPath;
-}(Path));
-var SubscriberPath = /** @class */ (function (_super) {
-    __extends(SubscriberPath, _super);
-    function SubscriberPath(_p) {
-        var _this = _super.call(this, _p.spd) || this;
-        _this.p = _p;
-        return _this;
     }
-    return SubscriberPath;
-}(Path));
-var Pow2SPath = /** @class */ (function (_super) {
-    __extends(Pow2SPath, _super);
-    function Pow2SPath(_p) {
-        return _super.call(this, _p) || this;
+}
+class SubscriberPath extends Path {
+    constructor(_p) {
+        super(_p.spd);
+        this.p = _p;
     }
-    Pow2SPath.prototype.cal = function (t) {
-        return this.p.cal(Math.pow(t, 2));
-    };
-    return Pow2SPath;
-}(SubscriberPath));
-var ReversePow2SPath = /** @class */ (function (_super) {
-    __extends(ReversePow2SPath, _super);
-    function ReversePow2SPath(_p) {
-        return _super.call(this, _p) || this;
+}
+class Pow2SPath extends SubscriberPath {
+    constructor(_p) {
+        super(_p);
     }
-    ReversePow2SPath.prototype.cal = function (t) {
-        return this.p.cal(Math.pow((1 - t), 2));
-    };
-    return ReversePow2SPath;
-}(SubscriberPath));
-var MultiPath = /** @class */ (function (_super) {
-    __extends(MultiPath, _super);
-    function MultiPath(_ps) {
-        var _this = this;
-        var spdsum = 0;
-        _ps.forEach(function (element) {
+    cal(t) {
+        return this.p.cal(t ** 2);
+    }
+}
+class ReversePow2SPath extends SubscriberPath {
+    constructor(_p) {
+        super(_p);
+    }
+    cal(t) {
+        return this.p.cal((1 - t) ** 2);
+    }
+}
+class MultiPath extends Path {
+    constructor(_ps) {
+        let spdsum = 0;
+        _ps.forEach(element => {
             spdsum += element.spd;
         });
-        _this = _super.call(this, spdsum) || this;
-        _this.ps = _ps;
-        _this.ssp = [];
-        var nss = 0;
-        _this.ssp.push(0);
-        _ps.forEach(function (element) {
+        super(spdsum);
+        this.ps = _ps;
+        this.ssp = [];
+        let nss = 0;
+        this.ssp.push(0);
+        _ps.forEach(element => {
             nss += element.spd;
-            _this.ssp.push(nss / spdsum);
+            this.ssp.push(nss / spdsum);
         });
-        return _this;
     }
-    MultiPath.prototype.cal = function (t) {
-        for (var i = 1; i < this.ssp.length; i++) {
+    cal(t) {
+        for (let i = 1; i < this.ssp.length; i++) {
             if (t < this.ssp[i]) {
-                var nt = (t - this.ssp[i - 1]) / (this.ssp[i] - this.ssp[i - 1]);
+                let nt = (t - this.ssp[i - 1]) / (this.ssp[i] - this.ssp[i - 1]);
                 return this.ps[i - 1].cal(nt);
             }
         }
         return this.ps[this.ps.length - 1].cal(1);
-    };
-    return MultiPath;
-}(Path));
-var Note = /** @class */ (function () {
-    function Note(_p, _h, _t, _y) {
+    }
+}
+class Note {
+    constructor(_p, _h, _t, _y, _al) {
         this.p = _p;
         this.h = _h;
         this.t = _t;
         this.y = _y;
         this.a = 0;
         this.aa = 0;
+        if (this.y == "A" && _al == undefined) {
+            _al = 0;
+        }
+        this.al = _al;
     }
-    return Note;
-}());
+}
+function renderText(text, x, y, align = "left", fontSize = 50, alpha = 1) {
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.font = `${fontSize}px 'Courier New'`;
+    ctx.textAlign = align;
+    ctx.fillText(text, x, y);
+}
 function getQueryString(name) {
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    var r = window.location.search.substr(1).match(reg);
+    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.search.substr(1).match(reg);
     if (r != null) {
         return decodeURIComponent(r[2]);
     }
@@ -274,11 +199,10 @@ function angcalc(cx, cy, ax, ay) {
     return Math.PI / 2 - Math.atan((ax - cx) / (ay - cy));
 }
 function drawnote(note) {
-    var sec = tick / tps;
     if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.h + note.p.spd) / note.p.spd > 1) {
         return;
     }
-    var np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
+    let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
     if (note.t == "A") {
         ctx.fillStyle = "rgb(0,220,240)";
     }
@@ -296,44 +220,64 @@ function drawnote(note) {
     ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
     ctx.stroke();
 }
+function drawClackLine(note) {
+    if (note.y != "A") {
+        return;
+    }
+    if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.al - note.h + note.p.spd) / note.p.spd > 1) {
+        return;
+    }
+    let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
+    ctx.moveTo(...np);
+    for (let i = 0; i <= note.al; i += (1 / tps)) {
+        let t = (sec - i - note.h + note.p.spd) / note.p.spd;
+        t = Math.max(0, t);
+        t = Math.min(1, t);
+        np = note.p.cal(t);
+        ctx.strokeStyle = "rgb(255,255,255)";
+        ctx.lineTo(...np);
+    }
+    ctx.stroke();
+}
 function drawA(note) {
-    if (note.a == 12 && note.aa < note.ho * tps) {
-        var np = note.p.cal(0);
-        var rc = note.aa / note.hi / tps + 1;
-        ctx.fillStyle = "rgba(64,64,64,".concat(rc - 1);
+    let ad = sec - note.aa;
+    if (note.a == 12 && ad < note.hi) {
+        let np = note.p.cal(0);
+        let rc = ad / note.hi + 1;
+        ctx.fillStyle = `rgba(64,64,64,${rc - 1}`;
         ctx.beginPath();
         ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,".concat(rc - 1, ")");
+        ctx.strokeStyle = `rgba(255,255,255,${rc - 1})`;
         ctx.beginPath();
         ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
         ctx.stroke();
     }
-    else if (note.a == 11 && note.aa < note.ho * tps) {
-        var np = note.p.cal(1);
-        var rc = note.aa / note.ho / tps + 1;
-        ctx.fillStyle = "rgba(64,64,64,".concat(2 - rc);
+    else if (note.a == 11 && ad < note.ho) {
+        let np = note.p.cal(1);
+        let rc = ad / note.ho + 1;
+        ctx.fillStyle = `rgba(64,64,64,${2 - rc}`;
         ctx.beginPath();
         ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,".concat(2 - rc, ")");
+        ctx.strokeStyle = `rgba(255,255,255,${2 - rc})`;
         ctx.beginPath();
         ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
         ctx.stroke();
     }
-    else if (note.a > 0 && note.aa * 4 < tps) {
-        var rc = note.aa * 4 / tps + 1;
-        var np = note.p.cal(1);
+    else if (note.a > 0 && ad < 0.25) {
+        let rc = ad / 0.25 + 1;
+        let np = note.p.cal(1);
         if (note.a == 1) {
-            ctx.fillStyle = "rgba(160,144,0,".concat(2 - rc, ")");
+            ctx.fillStyle = `rgba(160,144,0,${2 - rc})`;
         }
         else if (note.a == 2) {
-            ctx.fillStyle = "rgba(0,167,195,".concat(2 - rc, ")");
+            ctx.fillStyle = `rgba(0,167,195,${2 - rc})`;
         }
         ctx.beginPath();
         ctx.arc(np[0], np[1], 88 * rc, 0, Math.PI * 2, true);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,".concat(2 - rc, ")");
+        ctx.strokeStyle = `rgba(255,255,255,${2 - rc})`;
         ctx.beginPath();
         ctx.arc(np[0], np[1], 80 * rc, 0, Math.PI * 2, true);
         ctx.stroke();
@@ -343,15 +287,41 @@ function drawTexts() {
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.font = "50px 'Courier New'";
     ctx.textAlign = "center";
-    ctx.fillText("".concat(combo), 1600, 60);
-    ctx.fillText("COMBO", 1600, 120);
+    ctx.fillText(`${combo}`, 1600, 60);
+    ctx.fillText(`COMBO`, 1600, 120);
     ctx.textAlign = "right";
-    ctx.fillText("Point: ".concat((points_got / points_total * 100000).toFixed(0)), 3150, 60);
-    ctx.fillText("Music: ".concat((tick / tps / song.length * 100).toFixed(2), "%"), 3150, 120);
+    ctx.fillText(`Point: ${(points_got / points_total * 100000).toFixed(0)}`, 3150, 60);
+    ctx.fillText(`Music: ${(sec / song.length * 100).toFixed(2)}%`, 3150, 120);
+    if (debug) {
+        if ((trueTps / tps) >= 0.00) {
+            ctx.fillStyle = "rgb(255,0,255)";
+        }
+        if ((trueTps / tps) > 0.30) {
+            ctx.fillStyle = "rgb(255,0,63)";
+        }
+        if ((trueTps / tps) > 0.60) {
+            ctx.fillStyle = "rgb(255,0,0)";
+        }
+        if ((trueTps / tps) > 0.90) {
+            ctx.fillStyle = "rgb(255,127,0)";
+        }
+        if ((trueTps / tps) > 0.95) {
+            ctx.fillStyle = "rgb(255,255,0)";
+        }
+        if ((trueTps / tps) > 0.999) {
+            ctx.fillStyle = "rgb(0,255,0)";
+        }
+        if ((trueTps / tps) > 0.99999) {
+            ctx.fillStyle = "rgb(0,255,255)";
+        }
+        ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`, 3150, 180);
+        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)}`, 3150, 240);
+    }
 }
 function parsePath(n) {
-    var ep = n;
-    var p = new Path(0);
+    let ep = n;
+    let p = new Path(0);
     switch (ep.type) {
         case "arc":
             p = new ArcPath(ep.spd, ep.c[0], ep.c[1], ep.f[0], ep.f[1], ep.t[0], ep.t[1]);
@@ -377,21 +347,21 @@ function parseSong() {
     if (song === null) {
         throw Error("Song not loaded");
     }
-    song.notes.forEach(function (element) {
-        var ps = [];
-        element.paths.forEach(function (pe) {
+    song.notes.forEach(element => {
+        let ps = [];
+        element.paths.forEach(pe => {
             ps.push(parsePath(pe));
         });
-        var p = new MultiPath(ps);
-        notes.push(new Note(p, element.h, element.track, element.type));
+        let p = new MultiPath(ps);
+        notes.push(new Note(p, element.h, element.track, element.type, element.al));
     });
-    song.animationNotes.forEach(function (element) {
-        var ps = [];
-        element.paths.forEach(function (pe) {
+    song.animationNotes.forEach(element => {
+        let ps = [];
+        element.paths.forEach(pe => {
             ps.push(parsePath(pe));
         });
-        var p = new MultiPath(ps);
-        var n = new Note(p, element.h, "M", element.type);
+        let p = new MultiPath(ps);
+        let n = new Note(p, element.h, "M", element.type, element.al);
         n.ho = element.ho;
         n.hi = element.hi;
         animationNotes.push(n);
@@ -400,238 +370,207 @@ function parseSong() {
     notes_total = song.notes.length;
 }
 function nextFrame() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, new Promise(function (f) { setTimeout(function () { f(0); }, 1000 / tps); })];
-                case 1:
-                    _a.sent();
-                    ctx.fillStyle = "rgb(0,0,0)";
-                    ctx.fillRect(0, 0, 3200, 1800);
-                    tick++;
-                    return [2 /*return*/];
-            }
-        });
-    });
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(0, 0, 3200, 1800);
 }
 function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var canvas, id, i;
-        var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    canvas = document.getElementById('main_canvas');
-                    ctx = canvas.getContext('2d');
-                    ctx.fillStyle = "rgb(0,0,0)";
-                    ctx.fillRect(0, 0, 3200, 1800);
-                    ctx.fillStyle = "rgb(200,200,200)";
-                    ctx.font = "200px 'Courier New'";
-                    ctx.textAlign = "center";
-                    ctx.fillText("游戏正在加载", 1600, 900);
-                    bus.on("hit", function (e) {
-                        combo++;
-                        max_combo = Math.max(combo, max_combo);
-                        if (e == 1) {
-                            points_got += 100;
-                            perfect += 1;
-                        }
-                        else if (e == 2) {
-                            points_got += 75;
-                            good += 1;
-                        }
-                    });
-                    bus.on("hit", function (e) {
-                        for (var i = 0; i < 16; i++) {
-                            if (Date.now() > sound_hit_manager[i]) {
-                                sound_hit[i].play();
-                                sound_hit_manager[i] = Date.now() + 200;
-                                console.log("Playing hit ".concat(i));
-                                break;
-                            }
-                        }
-                    });
-                    bus.on("miss", function (e) {
-                        combo = 0;
-                    });
-                    document.addEventListener("keydown", function (e) {
-                        var fetched = false;
-                        if (e.keyCode == 65) {
-                            notes.forEach(function (element) {
-                                if (element.a || element.t != "A") {
-                                    return;
-                                }
-                                if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
-                                    fetched = true;
-                                    element.a = 1;
-                                    element.aa = 1;
-                                    bus.emit("hit", 1);
-                                }
-                                else if (Math.abs(element.h * tps - tick) <= 0.15 * tps) {
-                                    fetched = true;
-                                    element.a = 2;
-                                    element.aa = 1;
-                                    bus.emit("hit", 2);
-                                }
-                            });
-                            if (!fetched) {
-                                bus.emit("miss", null);
-                            }
-                        }
-                        if (e.keyCode == 76) {
-                            notes.forEach(function (element) {
-                                if (element.a || element.t != "B") {
-                                    return;
-                                }
-                                if (Math.abs(element.h * tps - tick) <= 0.04 * tps) {
-                                    fetched = true;
-                                    element.a = 1;
-                                    element.aa = 1;
-                                    bus.emit("hit", 1);
-                                }
-                                else if (Math.abs(element.h * tps - tick) <= 0.08 * tps) {
-                                    fetched = true;
-                                    element.a = 2;
-                                    element.aa = 1;
-                                    bus.emit("hit", 2);
-                                }
-                            });
-                            if (!fetched) {
-                                bus.emit("miss", null);
-                            }
-                        }
-                    });
-                    id = getQueryString("id");
-                    if (id == null) {
-                        ctx.fillStyle = "rgb(0,0,0)";
-                        ctx.fillRect(0, 0, 3200, 1800);
-                        ctx.fillStyle = "rgb(200,200,200)";
-                        ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
-                        throw new Error("No data file given.");
-                    }
-                    return [4 /*yield*/, fetch("./".concat(id, ".json")).then(function (response) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, response.json()];
-                                case 1: return [2 /*return*/, song = _a.sent()];
-                            }
-                        }); }); })];
-                case 1:
-                    _a.sent();
-                    if (song == undefined) {
-                        ctx.fillStyle = "rgb(0,0,0)";
-                        ctx.fillRect(0, 0, 3200, 1800);
-                        ctx.fillStyle = "rgb(200,200,200)";
-                        ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
-                        throw new Error("Data file has nothing or corrupted or not exist.");
-                    }
-                    if (!song.script) return [3 /*break*/, 3];
-                    return [4 /*yield*/, fetch("./".concat(song.script)).then(function (response) { return __awaiter(_this, void 0, void 0, function () { var _a; return __generator(this, function (_b) {
-                            switch (_b.label) {
-                                case 0:
-                                    _a = eval;
-                                    return [4 /*yield*/, response.text()];
-                                case 1: return [2 /*return*/, _a.apply(void 0, [_b.sent()])];
-                            }
-                        }); }); })];
-                case 2:
-                    _a.sent();
-                    _a.label = 3;
-                case 3:
-                    sound_hit = [];
-                    for (i = 0; i < 16; i++) {
-                        sound_hit.push(new Audio("./hit.mp3"));
-                    }
-                    if (song.bgsound) {
-                        sound_bg = new Audio(song.bgsound);
-                    }
-                    else {
-                        sound_bg = new Audio("./blank.mp3");
-                    }
-                    return [4 /*yield*/, new Promise(function (r) { var t = setInterval(function () { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
-                            clearInterval(t);
-                            r(null);
-                        } }, 100); })];
-                case 4:
-                    _a.sent();
-                    sound_bg.volume = 0.5 * base_volume;
-                    sound_hit.forEach(function (e) {
-                        e.volume = 1 * base_volume;
-                    });
-                    sound_hit[0].currentTime;
-                    parseSong();
-                    ctx.fillStyle = "rgb(0,0,0)";
-                    ctx.fillRect(0, 0, 3200, 1800);
-                    //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
-                    /*
-                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
-                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
-                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4.5));
-                    notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
-                    */
-                    //drawnote(new Note(new StaticPath(800,450),0,3600));
-                    try {
-                        sound_bg.play();
-                    }
-                    catch (de) {
-                        alert("请打开“允许音频自动播放”，然后刷新");
-                    }
-                    _a.label = 5;
-                case 5:
-                    if (!true) return [3 /*break*/, 9];
-                    //drawnote(centerNote);
-                    bus.emit("tick", tick / tps);
-                    animationNotes.forEach(function (element) {
-                        if (element.a == 12 && element.aa + 1 > element.hi * tps) {
-                            element.a = 0;
-                            element.aa = 0;
-                        }
-                        else if (element.a) {
-                            element.aa++;
-                        }
-                        else if (Math.abs(element.h * tps - tick) <= 1) {
-                            if (element.ho) {
-                                element.a = 11;
-                                element.aa = 1;
-                            }
-                        }
-                        else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) * tps - tick) <= 1) {
-                            element.a = 12;
-                            element.aa = 1;
-                        }
-                        drawnote(element);
-                        drawA(element);
-                    });
-                    notes.forEach(function (element) {
-                        if (element.a) {
-                            element.aa++;
-                        }
-                        else if (autoPlay && (Math.abs(element.h * tps - tick) < 0.04 * tps)) {
-                            element.a = 1;
-                            element.aa = 1;
-                            bus.emit("hit", 1);
-                        }
-                        else if ((tick - element.h * tps) > 0.08 * tps) {
-                            element.a = -1;
-                            bus.emit("miss", null);
-                        }
-                        drawnote(element);
-                    });
-                    notes.forEach(function (element) {
-                        drawA(element);
-                    });
-                    drawTexts();
-                    return [4 /*yield*/, nextFrame()];
-                case 6:
-                    _a.sent();
-                    if (!(tick / tps >= song.length)) return [3 /*break*/, 8];
-                    location.replace("./finish.html?i=".concat(id, "&c=").concat(max_combo, "&t=").concat((points_got / points_total * 100000).toFixed(0), "&p=").concat(perfect, "&g=").concat(good, "&m=").concat(notes_total - perfect - good));
-                    return [4 /*yield*/, new Promise(function (r) { })];
-                case 7:
-                    _a.sent();
-                    _a.label = 8;
-                case 8: return [3 /*break*/, 5];
-                case 9: return [2 /*return*/];
+    return __awaiter(this, void 0, void 0, function* () {
+        var canvas = document.getElementById('main_canvas');
+        ctx = canvas.getContext('2d');
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(0, 0, 3200, 1800);
+        ctx.fillStyle = "rgb(200,200,200)";
+        ctx.font = "200px 'Courier New'";
+        ctx.textAlign = "center";
+        ctx.fillText("游戏正在加载", 1600, 900);
+        bus.on("hit", function (e) {
+            combo++;
+            max_combo = Math.max(combo, max_combo);
+            if (e == 1) {
+                points_got += 100;
+                perfect += 1;
+            }
+            else if (e == 2) {
+                points_got += 75;
+                good += 1;
             }
         });
+        bus.on("hit", function (e) {
+            for (let i = 0; i < 16; i++) {
+                if (Date.now() > sound_hit_manager[i]) {
+                    sound_hit[i].play();
+                    sound_hit_manager[i] = Date.now() + 200;
+                    console.log(`Playing hit ${i}`);
+                    break;
+                }
+            }
+        });
+        bus.on("miss", function (e) {
+            combo = 0;
+        });
+        bus.on("tick", function (e) {
+            tickPerSec++;
+        });
+        bus.on("start", function (e) {
+            startTime = Date.now();
+        });
+        document.addEventListener("keydown", (e) => {
+            let fetched = false;
+            if (e.keyCode == 65) {
+                notes.forEach((element) => {
+                    if (element.a || element.t != "A") {
+                        return;
+                    }
+                    if (Math.abs(element.h - sec) <= 0.08) {
+                        fetched = true;
+                        element.a = 1;
+                        element.aa = 1;
+                        bus.emit("hit", 1);
+                    }
+                    else if (Math.abs(element.h - sec) <= 0.16) {
+                        fetched = true;
+                        element.a = 2;
+                        element.aa = 1;
+                        bus.emit("hit", 2);
+                    }
+                });
+                if (!fetched) {
+                    bus.emit("miss", null);
+                }
+            }
+            if (e.keyCode == 76) {
+                notes.forEach((element) => {
+                    if (element.a || element.t != "B") {
+                        return;
+                    }
+                    if (Math.abs(element.h - sec) <= 0.08) {
+                        fetched = true;
+                        element.a = 1;
+                        element.aa = sec;
+                        bus.emit("hit", 1);
+                    }
+                    else if (Math.abs(element.h - sec) <= 0.16) {
+                        fetched = true;
+                        element.a = 2;
+                        element.aa = sec;
+                        bus.emit("hit", 2);
+                    }
+                });
+                if (!fetched) {
+                    bus.emit("miss", null);
+                }
+            }
+        });
+        let id = getQueryString("id");
+        if (id == null) {
+            ctx.fillStyle = "rgb(0,0,0)";
+            ctx.fillRect(0, 0, 3200, 1800);
+            ctx.fillStyle = "rgb(200,200,200)";
+            ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+            throw new Error("No data file given.");
+        }
+        yield fetch(`./${id}.json`).then((response) => __awaiter(this, void 0, void 0, function* () { return song = yield response.json(); }));
+        if (song == undefined) {
+            ctx.fillStyle = "rgb(0,0,0)";
+            ctx.fillRect(0, 0, 3200, 1800);
+            ctx.fillStyle = "rgb(200,200,200)";
+            ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+            throw new Error("Data file has nothing or corrupted or not exist.");
+        }
+        if (song.script) {
+            yield fetch(`./${song.script}`).then((response) => __awaiter(this, void 0, void 0, function* () { return eval(yield response.text()); }));
+        }
+        sound_hit = [];
+        for (let i = 0; i < 16; i++) {
+            sound_hit.push(new Audio("./hit.mp3"));
+        }
+        if (song.bgsound) {
+            sound_bg = new Audio(song.bgsound);
+        }
+        else {
+            sound_bg = new Audio("./blank.mp3");
+        }
+        yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+            clearInterval(t);
+            r(null);
+        } }, 10); });
+        sound_bg.volume = 0.5 * base_volume;
+        sound_hit.forEach(e => {
+            e.volume = 1 * base_volume;
+        });
+        parseSong();
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.fillRect(0, 0, 3200, 1800);
+        //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
+        /*
+        notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
+        notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
+        notes.push(new Note(new ArcPath(1,780,-200,-40,900),4.5));
+        notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
+        */
+        //drawnote(new Note(new StaticPath(800,450),0,3600));
+        setInterval(function () {
+            trueTps = tickPerSec;
+            tickPerSec = 0;
+        }, 1000);
+        try {
+            sound_bg.play();
+        }
+        catch (de) {
+            alert("请打开“允许音频自动播放”，然后刷新");
+        }
+        bus.emit("start", null);
+        let mainTimer = setInterval(function () {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (paused) {
+                    paused_time = (Date.now() - startTime) / 1000 - sec;
+                    return;
+                }
+                nextFrame();
+                sec = (Date.now() - startTime) / 1000 - paused_time;
+                bus.emit("tick", sec);
+                animationNotes.forEach(element => {
+                    if (element.a == 12 && sec - element.aa > element.hi) {
+                        element.a = 0;
+                        element.aa = 0;
+                    }
+                    else if (Math.abs(element.h - sec) <= 1.5 / tps) {
+                        if (element.ho) {
+                            element.a = 11;
+                            element.aa = sec;
+                        }
+                    }
+                    else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) - sec) <= 1.5 / tps) {
+                        element.a = 12;
+                        element.aa = sec;
+                    }
+                    drawnote(element);
+                    drawA(element);
+                });
+                notes.forEach(element => {
+                    drawClackLine(element);
+                });
+                notes.forEach(element => {
+                    if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.5 / tps)) {
+                        element.a = 1;
+                        element.aa = sec;
+                        bus.emit("hit", 1);
+                    }
+                    else if ((sec - element.h) > 0.16 && !element.a) {
+                        element.a = -1;
+                        bus.emit("miss", null);
+                    }
+                    drawnote(element);
+                });
+                notes.forEach(element => {
+                    drawA(element);
+                });
+                drawTexts();
+                if (sec >= song.length) {
+                    location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got / points_total * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total - perfect - good}`);
+                    clearInterval(mainTimer);
+                }
+            });
+        }, 1000 / tps);
     });
 }
