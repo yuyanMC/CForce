@@ -424,13 +424,13 @@ function main() {
                     if (Math.abs(element.h - sec) <= 0.08) {
                         fetched = true;
                         element.a = 1;
-                        element.aa = 1;
+                        element.aa = sec;
                         bus.emit("hit", 1);
                     }
                     else if (Math.abs(element.h - sec) <= 0.16) {
                         fetched = true;
                         element.a = 2;
-                        element.aa = 1;
+                        element.aa = sec;
                         bus.emit("hit", 2);
                     }
                 });
@@ -459,6 +459,34 @@ function main() {
                 if (!fetched) {
                     bus.emit("miss", null);
                 }
+            }
+        });
+        document.addEventListener("keyup", (e) => {
+            if (e.keyCode == 65) {
+                notes.forEach((element) => {
+                    if (element.a <= 0 || element.t != "A" || element.y != "A") {
+                        return;
+                    }
+                    if (element.h + element.al - sec > 0 && element.h - sec < 0) {
+                        points_got -= element.a == 1 ? 100 : 75;
+                        element.a = -1;
+                        element.aa = 0;
+                        bus.emit("miss", null);
+                    }
+                });
+            }
+            if (e.keyCode == 76) {
+                notes.forEach((element) => {
+                    if (element.a <= 0 || element.t != "B" || element.y != "A") {
+                        return;
+                    }
+                    if (element.h + element.al - sec > 0 && element.h - sec < 0) {
+                        points_got -= element.a == 1 ? 100 : 75;
+                        element.a = -1;
+                        element.aa = 0;
+                        bus.emit("miss", null);
+                    }
+                });
             }
         });
         let id = getQueryString("id");
@@ -567,8 +595,9 @@ function main() {
                 });
                 drawTexts();
                 if (sec >= song.length) {
-                    location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got / points_total * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total - perfect - good}`);
                     clearInterval(mainTimer);
+                    paused = true;
+                    location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got / points_total * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total - perfect - good}`);
                 }
             });
         }, 1000 / tps);
