@@ -1,3 +1,4 @@
+"use strict";
 let start_tick = Date.now();
 bus.on("start", t => {
     start_tick = Date.now();

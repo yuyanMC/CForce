@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -29,18 +30,18 @@ class EventBus {
     }
 }
 // libEnd
-var ctx;
-var notes = new Array();
-var animationNotes = new Array();
+let ctx;
+let notes = [];
+let animationNotes = [];
 //var tick:number=0; // @deprecated @unused
-var tps = 144;
-var song = null;
-var autoPlay = false;
-var combo = 0;
-var sound_hit = null;
-var sound_hit_manager = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var sound_bg = null;
-var base_volume = 0.2;
+let tps = 144;
+let song = null;
+let autoPlay = false;
+let combo = 0;
+let sound_hit = null;
+let sound_hit_manager = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+let sound_bg = null;
+let base_volume = 0.2;
 var points_got = 0;
 var points_total = 0;
 var notes_total = 0;
@@ -48,7 +49,7 @@ var max_combo = 0;
 var perfect = 0;
 var good = 0;
 var paused = false;
-var tickPerSec = 0;
+var tickTimes = [];
 var trueTps = 0;
 var debug = true;
 var startTime = Date.now();
@@ -186,7 +187,6 @@ function getQueryString(name) {
     if (r != null) {
         return decodeURIComponent(r[2]);
     }
-    ;
     return null;
 }
 function angcalc(cx, cy, ax, ay) {
@@ -293,6 +293,7 @@ function drawTexts() {
     ctx.fillText(`Point: ${(points_got / points_total * 100000).toFixed(0)}`, 3150, 60);
     ctx.fillText(`Music: ${(sec / song.length * 100).toFixed(2)}%`, 3150, 120);
     if (debug) {
+        trueTps = tickTimes.length;
         if ((trueTps / tps) >= 0.00) {
             ctx.fillStyle = "rgb(255,0,255)";
         }
@@ -316,7 +317,7 @@ function drawTexts() {
         }
         ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`, 3150, 180);
         ctx.fillStyle = "rgb(255,255,255)";
-        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)}`, 3150, 240);
+        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)} Music:${sound_bg.currentTime.toFixed(3)}`, 3150, 240);
     }
 }
 function parsePath(n) {
@@ -409,10 +410,14 @@ function main() {
             combo = 0;
         });
         bus.on("tick", function (e) {
-            tickPerSec++;
+            let now = Date.now();
+            tickTimes.push(now);
+            while (now - tickTimes[0] >= 1000) {
+                tickTimes.splice(0, 1);
+            }
         });
         bus.on("start", function (e) {
-            startTime = Date.now();
+            startTime = Date.now() - sound_bg.currentTime * 1000;
         });
         document.addEventListener("keydown", (e) => {
             let fetched = false;
@@ -469,6 +474,12 @@ function main() {
                     }
                     if (element.h + element.al - sec > 0 && element.h - sec < 0) {
                         points_got -= element.a == 1 ? 100 : 75;
+                        if (element.a == 1) {
+                            perfect--;
+                        }
+                        else {
+                            good--;
+                        }
                         element.a = -1;
                         element.aa = 0;
                         bus.emit("miss", null);
@@ -482,6 +493,12 @@ function main() {
                     }
                     if (element.h + element.al - sec > 0 && element.h - sec < 0) {
                         points_got -= element.a == 1 ? 100 : 75;
+                        if (element.a == 1) {
+                            perfect--;
+                        }
+                        else {
+                            good--;
+                        }
                         element.a = -1;
                         element.aa = 0;
                         bus.emit("miss", null);
@@ -518,10 +535,11 @@ function main() {
         else {
             sound_bg = new Audio("./blank.mp3");
         }
-        yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
-            clearInterval(t);
-            r(null);
-        } }, 10); });
+        if (navigator.userAgent == "")
+            yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                clearInterval(t);
+                r(null);
+            } }, 10); });
         sound_bg.volume = 0.5 * base_volume;
         sound_hit.forEach(e => {
             e.volume = 1 * base_volume;
@@ -537,69 +555,65 @@ function main() {
         notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
         */
         //drawnote(new Note(new StaticPath(800,450),0,3600));
-        setInterval(function () {
-            trueTps = tickPerSec;
-            tickPerSec = 0;
-        }, 1000);
-        try {
-            sound_bg.play();
-        }
-        catch (de) {
-            alert("请打开“允许音频自动播放”，然后刷新");
-        }
-        bus.emit("start", null);
-        let mainTimer = setInterval(function () {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (paused) {
-                    paused_time = (Date.now() - startTime) / 1000 - sec;
-                    return;
-                }
-                nextFrame();
-                sec = (Date.now() - startTime) / 1000 - paused_time;
-                bus.emit("tick", sec);
-                animationNotes.forEach(element => {
-                    if (element.a == 12 && sec - element.aa > element.hi) {
-                        element.a = 0;
-                        element.aa = 0;
+        let timer = setInterval(() => { if (sound_bg.currentTime > 0) {
+            clearInterval(timer);
+            bus.emit("start", null);
+        } }, 1);
+        sound_bg.play().catch(e => { alert("请打开“允许音频自动播放”，然后刷新"); });
+        bus.on("start", () => {
+            let mainTimer = setInterval(function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (paused) {
+                        paused_time = (Date.now() - startTime) / 1000 - sec;
+                        return;
                     }
-                    else if (Math.abs(element.h - sec) <= 1.5 / tps) {
-                        if (element.ho) {
-                            element.a = 11;
+                    nextFrame();
+                    sec = (Date.now() - startTime) / 1000 - paused_time;
+                    bus.emit("tick", sec);
+                    animationNotes.forEach(element => {
+                        if (element.a == 12 && sec - element.aa > element.hi) {
+                            element.a = 0;
+                            element.aa = 0;
+                        }
+                        else if (Math.abs(element.h - sec) <= 1.5 / tps) {
+                            if (element.ho) {
+                                element.a = 11;
+                                element.aa = sec;
+                            }
+                        }
+                        else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) - sec) <= 1.5 / tps) {
+                            element.a = 12;
                             element.aa = sec;
                         }
+                        drawnote(element);
+                        drawA(element);
+                    });
+                    notes.forEach(element => {
+                        drawClackLine(element);
+                    });
+                    notes.forEach(element => {
+                        if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.5 / tps)) {
+                            element.a = 1;
+                            element.aa = sec;
+                            bus.emit("hit", 1);
+                        }
+                        else if ((sec - element.h) > 0.16 && !element.a) {
+                            element.a = -1;
+                            bus.emit("miss", null);
+                        }
+                        drawnote(element);
+                    });
+                    notes.forEach(element => {
+                        drawA(element);
+                    });
+                    drawTexts();
+                    if (sec >= song.length) {
+                        clearInterval(mainTimer);
+                        paused = true;
+                        location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got / points_total * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total - perfect - good}`);
                     }
-                    else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) - sec) <= 1.5 / tps) {
-                        element.a = 12;
-                        element.aa = sec;
-                    }
-                    drawnote(element);
-                    drawA(element);
                 });
-                notes.forEach(element => {
-                    drawClackLine(element);
-                });
-                notes.forEach(element => {
-                    if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.5 / tps)) {
-                        element.a = 1;
-                        element.aa = sec;
-                        bus.emit("hit", 1);
-                    }
-                    else if ((sec - element.h) > 0.16 && !element.a) {
-                        element.a = -1;
-                        bus.emit("miss", null);
-                    }
-                    drawnote(element);
-                });
-                notes.forEach(element => {
-                    drawA(element);
-                });
-                drawTexts();
-                if (sec >= song.length) {
-                    clearInterval(mainTimer);
-                    paused = true;
-                    location.replace(`./finish.html?i=${id}&c=${max_combo}&t=${(points_got / points_total * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${notes_total - perfect - good}`);
-                }
-            });
-        }, 1000 / tps);
+            }, 1000 / tps);
+        });
     });
 }

@@ -18,5 +18,10 @@
         "id":"timer",
         "name":"调试-时间准度",
         "difficulty":42
+    },
+    {
+        "id":"beeper",
+        "name":"调试-节拍",
+        "difficulty":42
     }
 ]
