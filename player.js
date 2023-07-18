@@ -317,7 +317,7 @@ function drawTexts() {
         }
         ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`, 3150, 180);
         ctx.fillStyle = "rgb(255,255,255)";
-        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)} Music:${sound_bg.currentTime.toFixed(3)}`, 3150, 240);
+        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)} Music: ${sound_bg.currentTime.toFixed(3)}`, 3150, 240);
     }
 }
 function parsePath(n) {
@@ -535,11 +535,25 @@ function main() {
         else {
             sound_bg = new Audio("./blank.mp3");
         }
-        if (navigator.userAgent == "")
-            yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
-                clearInterval(t);
-                r(null);
-            } }, 10); });
+        if (/[\s\S]*(iPhone|iPad|iPod)[\s\S]*/.test(navigator.userAgent)) {
+            alert("因为苹果设备的特殊性，请您关闭弹窗后，点击屏幕，继续游戏。");
+            yield new Promise((resolve) => { document.onclick = (e) => { resolve(null); document.onclick = null; }; });
+            yield sound_bg.play();
+            for (let i = 0; i < 16; i++) {
+                sound_hit[i].volume = 0;
+                sound_hit[i].play();
+            }
+            sound_bg.pause();
+            sound_bg.currentTime = 0;
+            for (let i = 0; i < 16; i++) {
+                sound_hit[i].pause();
+                sound_hit[i].currentTime = 0;
+            }
+        }
+        yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+            clearInterval(t);
+            r(null);
+        } }, 10); });
         sound_bg.volume = 0.5 * base_volume;
         sound_hit.forEach(e => {
             e.volume = 1 * base_volume;
@@ -559,7 +573,16 @@ function main() {
             clearInterval(timer);
             bus.emit("start", null);
         } }, 1);
-        sound_bg.play().catch(e => { alert("请打开“允许音频自动播放”，然后刷新"); });
+        sound_bg.play().catch((e) => __awaiter(this, void 0, void 0, function* () {
+            alert("您未开启音频自动播放，请关闭弹窗后点击屏幕开始游戏。");
+            yield new Promise((resolve) => {
+                document.onclick = (e) => {
+                    resolve(null);
+                    document.onclick = null;
+                };
+            });
+            sound_bg.play();
+        }));
         bus.on("start", () => {
             let mainTimer = setInterval(function () {
                 return __awaiter(this, void 0, void 0, function* () {
