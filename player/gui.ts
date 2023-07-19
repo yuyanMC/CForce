@@ -41,7 +41,6 @@ class NoteCanvasObject implements CanvasObject{
     drawOnCtx(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle=`rgba(${this.f.getColor()[0]},${this.f.getColor()[1]},${this.f.getColor()[2]},${this.f.getColor()[3]})`;
         ctx.beginPath();
-        ctx.beginPath();
         ctx.arc(this.x,this.y,this.r,0, Math.PI * 2, true);
         ctx.fill();
         ctx.strokeStyle=`rgba(255,255,255,${this.f.getColor()[3]})`;

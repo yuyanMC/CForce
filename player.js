@@ -164,7 +164,7 @@ class MultiPath extends Path {
     }
 }
 class Note {
-    constructor(_p, _h, _t, _y, _al) {
+    constructor(_p, _h, _t, _y, _al, _f) {
         this.p = _p;
         this.h = _h;
         this.t = _t;
@@ -175,6 +175,7 @@ class Note {
             _al = 0;
         }
         this.al = _al;
+        this.f = _f ? _f : [64, 64, 64];
     }
 }
 function renderText(text, x, y, align = "left", fontSize = 50, fill = new RGBAColor(255, 255, 255)) {
@@ -210,7 +211,7 @@ function drawNote(note) {
         c = new RGBAColor(220, 70, 20);
     }
     else {
-        c = new RGBAColor(64, 64, 64);
+        c = new RGBAColor(note.f[0], note.f[1], note.f[2]);
     }
     ec.render(new NoteCanvasObject(...np, c));
 }
@@ -228,13 +229,13 @@ function drawA(note) {
     if (note.a == 12 && ad < note.hi) {
         let np = note.p.cal(0);
         let rc = ad / note.hi + 1;
-        let c = new RGBAColor(64, 64, 64, rc - 1);
+        let c = new RGBAColor(note.f[0], note.f[1], note.f[2], rc - 1);
         ec.render(new NoteCanvasObject(...np, c));
     }
     else if (note.a == 11 && ad < note.ho) {
         let np = note.p.cal(1);
         let rc = ad / note.ho + 1;
-        let c = new RGBAColor(64, 64, 64, 2 - rc);
+        let c = new RGBAColor(note.f[0], note.f[1], note.f[2], 2 - rc);
         ec.render(new NoteCanvasObject(...np, c));
     }
     else if (note.a > 0 && ad < 0.25) {
@@ -328,7 +329,7 @@ function parseSong() {
             ps.push(parsePath(pe));
         });
         let p = new MultiPath(ps);
-        let n = new Note(p, element.h, "M", element.type, element.al);
+        let n = new Note(p, element.h, "M", element.type, element.al, element.fill);
         n.ho = element.ho;
         n.hi = element.hi;
         animationNotes.push(n);

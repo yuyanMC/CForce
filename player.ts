@@ -39,7 +39,7 @@ let notes: Array<Note> = [];
 let animationNotes: Array<Note> = [];
 //let tick:number=0; // @deprecated @unused
 let tps:number=144;
-let song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number,al?:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined,al?:number}>,bgsound:string,length:number,script:string|undefined}|null=null;
+let song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number,al?:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined,al?:number,fill?:[number,number,number]}>,bgsound:string,length:number,script:string|undefined}|null=null;
 let autoPlay:boolean=false;
 let combo:number=0;
 let sound_hit:Array<HTMLAudioElement>|null=null;
@@ -209,8 +209,9 @@ class Note{
     t:"A"|"B"|"M";
     y:"I"|"A";
     al?:number;
+    f:[number,number,number];
 
-    constructor(_p: Path,_h: number,_t: "A"|"B"|"M",_y:"I"|"A",_al?:number){
+    constructor(_p: Path,_h: number,_t: "A"|"B"|"M",_y:"I"|"A",_al?:number,_f?:[number,number,number]){
         this.p=_p;
         this.h=_h;
         this.t=_t;
@@ -221,6 +222,7 @@ class Note{
             _al=0;
         }
         this.al=_al;
+        this.f=_f?_f:[64,64,64];
     }
 }
 function renderText(text:string,x:number,y:number,align:CanvasTextAlign="left",fontSize:number=50,fill:RGBAColor|number=new RGBAColor(255,255,255)){
@@ -254,7 +256,7 @@ function drawNote(note:Note){
     }else if(note.t=="B"){
         c=new RGBAColor(220,70,20);
     }else{
-        c=new RGBAColor(64,64,64);
+        c=new RGBAColor(note.f[0],note.f[1],note.f[2]);
     }
     ec.render(new NoteCanvasObject(...np,c));
 }
@@ -272,12 +274,12 @@ function drawA(note:Note){
     if(note.a==12&&ad<note.hi!){
         let np=note.p.cal(0);
         let rc=ad/note.hi!+1;
-        let c=new RGBAColor(64,64,64,rc-1);
+        let c=new RGBAColor(note.f[0],note.f[1],note.f[2],rc-1);
         ec.render(new NoteCanvasObject(...np,c));
     }else if(note.a==11&&ad<note.ho!){
         let np=note.p.cal(1);
         let rc=ad/note.ho!+1;
-        let c=new RGBAColor(64,64,64,2-rc);
+        let c=new RGBAColor(note.f[0],note.f[1],note.f[2],2-rc);
         ec.render(new NoteCanvasObject(...np,c));
     }else if(note.a>0&&ad<0.25){
         let rc=ad/0.25+1;
@@ -369,7 +371,7 @@ function parseSong(){
             ps.push(parsePath(pe));
         });
         let p:Path=new MultiPath(ps);
-        let n:Note=new Note(p,element.h,"M",element.type,element.al);
+        let n:Note=new Note(p,element.h,"M",element.type,element.al,element.fill);
         n.ho=element.ho;
         n.hi=element.hi;
         animationNotes.push(n);

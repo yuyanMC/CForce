@@ -4,11 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8a94ebaf-a6ff-4e61-b948-677c1f92cc31" name="Changes" comment="Update some file">
-      <change afterPath="$PROJECT_DIR$/.idea/cforce.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
+    <list default="true" id="8a94ebaf-a6ff-4e61-b948-677c1f92cc31" name="Changes" comment="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!">
+      <change afterPath="$PROJECT_DIR$/doc/chart/index_zh_cn.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/catext.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/catext.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/player.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player.ts" beforeDir="false" afterPath="$PROJECT_DIR$/player.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/player/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/player/gui.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +113,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689574785281</updated>
       <workItem from="1689583509778" duration="316000" />
-      <workItem from="1689585199301" duration="25554000" />
+      <workItem from="1689585199301" duration="30412000" />
     </task>
     <task id="LOCAL-00001" summary="Music full support &amp; Introduction updated">
       <option name="closed" value="true" />
@@ -143,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1689760027422</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!">
+      <option name="closed" value="true" />
+      <created>1689760245825</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1689760245826</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,7 +166,6 @@
         <option value="$PROJECT_DIR$/finish.js" />
         <option value="$PROJECT_DIR$/player.js" />
         <option value="$PROJECT_DIR$/introduction.js" />
-        <option value="$PROJECT_DIR$/catext.js" />
         <option value="$PROJECT_DIR$/selector.js" />
         <option value="$PROJECT_DIR$/player/gui.js" />
       </list>
@@ -176,14 +187,15 @@
     <MESSAGE value="iOS/iPadOS support (1/2)" />
     <MESSAGE value="Remaked gui system." />
     <MESSAGE value="Update some file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update some file" />
+    <MESSAGE value="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/player/gui.ts</url>
-          <line>55</line>
+          <line>54</line>
           <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="1" />
         </line-breakpoint>
