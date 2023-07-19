@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,6 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// libEvent
+import { ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject } from './player/gui.js';
 class EventBus {
     constructor() {
         /** 保存 key => set 映射 */
@@ -33,7 +34,7 @@ class EventBus {
 let ctx;
 let notes = [];
 let animationNotes = [];
-//var tick:number=0; // @deprecated @unused
+//let tick:number=0; // @deprecated @unused
 let tps = 144;
 let song = null;
 let autoPlay = false;
@@ -42,19 +43,20 @@ let sound_hit = null;
 let sound_hit_manager = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 let sound_bg = null;
 let base_volume = 0.2;
-var points_got = 0;
-var points_total = 0;
-var notes_total = 0;
-var max_combo = 0;
-var perfect = 0;
-var good = 0;
-var paused = false;
-var tickTimes = [];
-var trueTps = 0;
-var debug = true;
-var startTime = Date.now();
-var sec = 0;
-var paused_time = 0;
+let points_got = 0;
+let points_total = 0;
+let notes_total = 0;
+let max_combo = 0;
+let perfect = 0;
+let good = 0;
+let paused = false;
+let tickTimes = [];
+let trueTps = 0;
+let debug = true;
+let startTime = Date.now();
+let sec = 0;
+let paused_time = 0;
+let ec;
 const bus = new EventBus();
 class Path {
     constructor(_spd) {
@@ -175,11 +177,8 @@ class Note {
         this.al = _al;
     }
 }
-function renderText(text, x, y, align = "left", fontSize = 50, alpha = 1) {
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.font = `${fontSize}px 'Courier New'`;
-    ctx.textAlign = align;
-    ctx.fillText(text, x, y);
+function renderText(text, x, y, align = "left", fontSize = 50, fill = new RGBAColor(255, 255, 255)) {
+    ec.render(new TextCanvasObject(text, x, y, align, fontSize, fill instanceof RGBAColor ? fill : new RGBAColor(255, 255, 255, fill)));
 }
 function getQueryString(name) {
     let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -198,27 +197,22 @@ function angcalc(cx, cy, ax, ay) {
     }
     return Math.PI / 2 - Math.atan((ax - cx) / (ay - cy));
 }
-function drawnote(note) {
+function drawNote(note) {
     if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.h + note.p.spd) / note.p.spd > 1) {
         return;
     }
     let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
+    let c;
     if (note.t == "A") {
-        ctx.fillStyle = "rgb(0,220,240)";
+        c = new RGBAColor(0, 220, 240);
     }
     else if (note.t == "B") {
-        ctx.fillStyle = "rgb(220,70,20)";
+        c = new RGBAColor(220, 70, 20);
     }
     else {
-        ctx.fillStyle = "rgb(64,64,64)";
+        c = new RGBAColor(64, 64, 64);
     }
-    ctx.beginPath();
-    ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
-    ctx.fill();
-    ctx.strokeStyle = "rgb(255,255,255)";
-    ctx.beginPath();
-    ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
-    ctx.stroke();
+    ec.render(new NoteCanvasObject(...np, c));
 }
 function drawClackLine(note) {
     if (note.y != "A") {
@@ -227,97 +221,69 @@ function drawClackLine(note) {
     if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.al - note.h + note.p.spd) / note.p.spd > 1) {
         return;
     }
-    let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
-    ctx.moveTo(...np);
-    for (let i = 0; i <= note.al; i += (1 / tps)) {
-        let t = (sec - i - note.h + note.p.spd) / note.p.spd;
-        t = Math.max(0, t);
-        t = Math.min(1, t);
-        np = note.p.cal(t);
-        ctx.strokeStyle = "rgb(255,255,255)";
-        ctx.lineTo(...np);
-    }
-    ctx.stroke();
+    ec.render(new ClackLineCanvasObject(note.p, (sec - note.al - note.h + note.p.spd) / note.p.spd, (sec - note.h + note.p.spd) / note.p.spd));
 }
 function drawA(note) {
     let ad = sec - note.aa;
     if (note.a == 12 && ad < note.hi) {
         let np = note.p.cal(0);
         let rc = ad / note.hi + 1;
-        ctx.fillStyle = `rgba(64,64,64,${rc - 1}`;
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle = `rgba(255,255,255,${rc - 1})`;
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
-        ctx.stroke();
+        let c = new RGBAColor(64, 64, 64, rc - 1);
+        ec.render(new NoteCanvasObject(...np, c));
     }
     else if (note.a == 11 && ad < note.ho) {
         let np = note.p.cal(1);
         let rc = ad / note.ho + 1;
-        ctx.fillStyle = `rgba(64,64,64,${2 - rc}`;
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 88, 0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle = `rgba(255,255,255,${2 - rc})`;
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 80, 0, Math.PI * 2, true);
-        ctx.stroke();
+        let c = new RGBAColor(64, 64, 64, 2 - rc);
+        ec.render(new NoteCanvasObject(...np, c));
     }
     else if (note.a > 0 && ad < 0.25) {
         let rc = ad / 0.25 + 1;
         let np = note.p.cal(1);
+        let c = new RGBAColor(0, 0, 0, 0);
         if (note.a == 1) {
-            ctx.fillStyle = `rgba(160,144,0,${2 - rc})`;
+            c = new RGBAColor(160, 144, 0, 2 - rc);
         }
         else if (note.a == 2) {
-            ctx.fillStyle = `rgba(0,167,195,${2 - rc})`;
+            c = new RGBAColor(0, 167, 195, 2 - rc);
         }
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 88 * rc, 0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle = `rgba(255,255,255,${2 - rc})`;
-        ctx.beginPath();
-        ctx.arc(np[0], np[1], 80 * rc, 0, Math.PI * 2, true);
-        ctx.stroke();
+        ec.render(new NoteCanvasObject(...np, c));
     }
 }
 function drawTexts() {
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.font = "50px 'Courier New'";
     ctx.textAlign = "center";
-    ctx.fillText(`${combo}`, 1600, 60);
-    ctx.fillText(`COMBO`, 1600, 120);
-    ctx.textAlign = "right";
-    ctx.fillText(`Point: ${(points_got / points_total * 100000).toFixed(0)}`, 3150, 60);
-    ctx.fillText(`Music: ${(sec / song.length * 100).toFixed(2)}%`, 3150, 120);
+    renderText(`${combo}`, 1600, 60, "center");
+    renderText(`COMBO`, 1600, 120, "center");
+    renderText(`Point: ${(points_got / points_total * 100000).toFixed(0)}`, 3150, 60, "right");
+    renderText(`Music: ${(sec / song.length * 100).toFixed(2)}%`, 3150, 120, "right");
     if (debug) {
         trueTps = tickTimes.length;
+        let c = new RGBAColor(255, 0, 255);
         if ((trueTps / tps) >= 0.00) {
-            ctx.fillStyle = "rgb(255,0,255)";
+            c = new RGBAColor(255, 0, 255);
         }
         if ((trueTps / tps) > 0.30) {
-            ctx.fillStyle = "rgb(255,0,63)";
+            c = new RGBAColor(255, 0, 63);
         }
         if ((trueTps / tps) > 0.60) {
-            ctx.fillStyle = "rgb(255,0,0)";
+            c = new RGBAColor(255, 0, 0);
         }
         if ((trueTps / tps) > 0.90) {
-            ctx.fillStyle = "rgb(255,127,0)";
+            c = new RGBAColor(255, 127, 0);
         }
         if ((trueTps / tps) > 0.95) {
-            ctx.fillStyle = "rgb(255,255,0)";
+            c = new RGBAColor(255, 255, 0);
         }
         if ((trueTps / tps) > 0.999) {
-            ctx.fillStyle = "rgb(0,255,0)";
+            c = new RGBAColor(0, 255, 0);
         }
         if ((trueTps / tps) > 0.99999) {
-            ctx.fillStyle = "rgb(0,255,255)";
+            c = new RGBAColor(0, 255, 255);
         }
-        ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`, 3150, 180);
-        ctx.fillStyle = "rgb(255,255,255)";
-        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)} Music: ${sound_bg.currentTime.toFixed(3)}`, 3150, 240);
+        renderText(`TPS: ${trueTps.toFixed(2)}/${tps}`, 3150, 180, "right", 50, c);
+        renderText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now() - startTime) / 1000).toFixed(3)} Music: ${sound_bg.currentTime.toFixed(3)}`, 3150, 240, "right");
     }
 }
 function parsePath(n) {
@@ -371,19 +337,17 @@ function parseSong() {
     notes_total = song.notes.length;
 }
 function nextFrame() {
-    ctx.fillStyle = "rgb(0,0,0)";
-    ctx.fillRect(0, 0, 3200, 1800);
+    ec.clear();
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        var canvas = document.getElementById('main_canvas');
+        let id = getQueryString("id");
+        document.getElementById("canvas_box").style.backgroundImage = `url("${id}.png")`;
+        let canvas = document.getElementById('main_canvas');
         ctx = canvas.getContext('2d');
-        ctx.fillStyle = "rgb(0,0,0)";
-        ctx.fillRect(0, 0, 3200, 1800);
-        ctx.fillStyle = "rgb(200,200,200)";
-        ctx.font = "200px 'Courier New'";
-        ctx.textAlign = "center";
-        ctx.fillText("游戏正在加载", 1600, 900);
+        ec = new EnhancedContent(ctx);
+        ec.clear();
+        renderText("游戏正在加载", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         bus.on("hit", function (e) {
             combo++;
             max_combo = Math.max(combo, max_combo);
@@ -506,24 +470,20 @@ function main() {
                 });
             }
         });
-        let id = getQueryString("id");
         if (id == null) {
-            ctx.fillStyle = "rgb(0,0,0)";
-            ctx.fillRect(0, 0, 3200, 1800);
-            ctx.fillStyle = "rgb(200,200,200)";
-            ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+            ec.clear();
+            renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
             throw new Error("No data file given.");
         }
         yield fetch(`./${id}.json`).then((response) => __awaiter(this, void 0, void 0, function* () { return song = yield response.json(); }));
         if (song == undefined) {
-            ctx.fillStyle = "rgb(0,0,0)";
-            ctx.fillRect(0, 0, 3200, 1800);
-            ctx.fillStyle = "rgb(200,200,200)";
-            ctx.fillText("游戏加载错误，请尝试刷新", 1600, 900);
+            ec.clear();
+            renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
             throw new Error("Data file has nothing or corrupted or not exist.");
         }
         if (song.script) {
-            yield fetch(`./${song.script}`).then((response) => __awaiter(this, void 0, void 0, function* () { return eval(yield response.text()); }));
+            yield import(`./${song.script}`);
+            //await fetch(`./${song.script}`).then(async(response)=>eval(await response.text()));
         }
         sound_hit = [];
         for (let i = 0; i < 16; i++) {
@@ -559,16 +519,7 @@ function main() {
             e.volume = 1 * base_volume;
         });
         parseSong();
-        ctx.fillStyle = "rgb(0,0,0)";
-        ctx.fillRect(0, 0, 3200, 1800);
-        //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
-        /*
-        notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
-        notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
-        notes.push(new Note(new ArcPath(1,780,-200,-40,900),4.5));
-        notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
-        */
-        //drawnote(new Note(new StaticPath(800,450),0,3600));
+        ec.clear();
         let timer = setInterval(() => { if (sound_bg.currentTime > 0) {
             clearInterval(timer);
             bus.emit("start", null);
@@ -608,7 +559,7 @@ function main() {
                             element.a = 12;
                             element.aa = sec;
                         }
-                        drawnote(element);
+                        drawNote(element);
                         drawA(element);
                     });
                     notes.forEach(element => {
@@ -624,7 +575,7 @@ function main() {
                             element.a = -1;
                             bus.emit("miss", null);
                         }
-                        drawnote(element);
+                        drawNote(element);
                     });
                     notes.forEach(element => {
                         drawA(element);
@@ -640,3 +591,5 @@ function main() {
         });
     });
 }
+window.onload = main;
+export { EventBus, bus, renderText, drawNote, Note, Path, ctx, drawA, drawClackLine, tps, paused, sec };

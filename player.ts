@@ -1,4 +1,6 @@
 // libEvent
+import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui.js';
+
 type Handler<T = any> = (val: T) => void;
 
 class EventBus<Events extends Record<string, any>> {
@@ -35,7 +37,7 @@ class EventBus<Events extends Record<string, any>> {
 let ctx: CanvasRenderingContext2D;
 let notes: Array<Note> = [];
 let animationNotes: Array<Note> = [];
-//var tick:number=0; // @deprecated @unused
+//let tick:number=0; // @deprecated @unused
 let tps:number=144;
 let song:{notes:Array<{type:"I"|"A",track:"A"|"B",paths:Array<IPath>,h:number,al?:number}>,animationNotes:Array<{type:"I"|"A",paths:Array<IPath>,h:number,ho:number|undefined,hi:number|undefined,al?:number}>,bgsound:string,length:number,script:string|undefined}|null=null;
 let autoPlay:boolean=false;
@@ -44,19 +46,20 @@ let sound_hit:Array<HTMLAudioElement>|null=null;
 let sound_hit_manager:Array<number>=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 let sound_bg:HTMLAudioElement|null=null;
 let base_volume=0.2;
-var points_got=0;
-var points_total=0;
-var notes_total=0;
-var max_combo=0;
-var perfect=0;
-var good=0;
-var paused=false;
-var tickTimes:number[]=[];
-var trueTps=0;
-var debug=true;
-var startTime=Date.now();
-var sec=0;
-var paused_time=0;
+let points_got=0;
+let points_total=0;
+let notes_total=0;
+let max_combo=0;
+let perfect=0;
+let good=0;
+let paused=false;
+let tickTimes:number[]=[];
+let trueTps=0;
+let debug=true;
+let startTime=Date.now();
+let sec=0;
+let paused_time=0;
+let ec:EnhancedContent;
 const bus = new EventBus<{
     hit: number,
     miss: null,
@@ -220,11 +223,8 @@ class Note{
         this.al=_al;
     }
 }
-function renderText(text:string,x:number,y:number,align:CanvasTextAlign="left",fontSize:number=50,alpha:number=1){
-    ctx.fillStyle=`rgba(255,255,255,${alpha})`;
-    ctx.font=`${fontSize}px 'Courier New'`;
-    ctx.textAlign=align;
-    ctx.fillText(text,x,y);
+function renderText(text:string,x:number,y:number,align:CanvasTextAlign="left",fontSize:number=50,fill:RGBAColor|number=new RGBAColor(255,255,255)){
+    ec.render(new TextCanvasObject(text,x,y,align,fontSize,fill instanceof RGBAColor?fill:new RGBAColor(255,255,255,fill)));
 }
 function getQueryString(name: string) {
     let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
@@ -243,25 +243,20 @@ function angcalc(cx: number,cy: number,ax: number,ay: number){
     }
     return Math.PI/2-Math.atan((ax-cx)/(ay-cy));
 }
-function drawnote(note:Note){
+function drawNote(note:Note){
     if((sec-note.h+note.p.spd)/note.p.spd<0||(sec-note.h+note.p.spd)/note.p.spd>1){
         return;
     }
     let np=note.p.cal((sec-note.h+note.p.spd)/note.p.spd);
+    let c: RGBAColor;
     if(note.t=="A"){
-        ctx.fillStyle="rgb(0,220,240)";
+        c=new RGBAColor(0,220,240);
     }else if(note.t=="B"){
-        ctx.fillStyle="rgb(220,70,20)";
+        c=new RGBAColor(220,70,20);
     }else{
-        ctx.fillStyle="rgb(64,64,64)";
+        c=new RGBAColor(64,64,64);
     }
-    ctx.beginPath();
-    ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
-    ctx.fill();
-    ctx.strokeStyle="rgb(255,255,255)"
-    ctx.beginPath();
-    ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
-    ctx.stroke();
+    ec.render(new NoteCanvasObject(...np,c));
 }
 function drawClackLine(note:Note){
     if(note.y!="A"){
@@ -270,94 +265,66 @@ function drawClackLine(note:Note){
     if((sec-note.h+note.p.spd)/note.p.spd<0||(sec-note.al!-note.h+note.p.spd)/note.p.spd>1){
         return;
     }
-    let np=note.p.cal((sec-note.h+note.p.spd)/note.p.spd);
-    ctx.moveTo(...np);
-    for(let i=0;i<=note.al!;i+=(1/tps)){
-        let t=(sec-i-note.h+note.p.spd)/note.p.spd;
-        t=Math.max(0,t);
-        t=Math.min(1,t);
-        np=note.p.cal(t);
-        ctx.strokeStyle="rgb(255,255,255)"
-        ctx.lineTo(...np);
-    }
-    ctx.stroke();
+    ec.render(new ClackLineCanvasObject(note.p,(sec-note.al!-note.h+note.p.spd)/note.p.spd,(sec-note.h+note.p.spd)/note.p.spd))
 }
 function drawA(note:Note){
     let ad=sec-note.aa;
     if(note.a==12&&ad<note.hi!){
         let np=note.p.cal(0);
         let rc=ad/note.hi!+1;
-        ctx.fillStyle=`rgba(64,64,64,${rc-1}`;
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle=`rgba(255,255,255,${rc-1})`;
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
-        ctx.stroke();
+        let c=new RGBAColor(64,64,64,rc-1);
+        ec.render(new NoteCanvasObject(...np,c));
     }else if(note.a==11&&ad<note.ho!){
         let np=note.p.cal(1);
         let rc=ad/note.ho!+1;
-        ctx.fillStyle=`rgba(64,64,64,${2-rc}`;
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],88,0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle=`rgba(255,255,255,${2-rc})`;
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],80,0, Math.PI * 2, true);
-        ctx.stroke();
+        let c=new RGBAColor(64,64,64,2-rc);
+        ec.render(new NoteCanvasObject(...np,c));
     }else if(note.a>0&&ad<0.25){
         let rc=ad/0.25+1;
         let np=note.p.cal(1);
+        let c:RGBAColor=new RGBAColor(0,0,0,0);
         if(note.a==1){
-            ctx.fillStyle=`rgba(160,144,0,${2-rc})`;
+            c=new RGBAColor(160,144,0,2-rc);
         }else if(note.a==2){
-            ctx.fillStyle=`rgba(0,167,195,${2-rc})`;
+            c=new RGBAColor(0,167,195,2-rc);
         }
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],88*rc,0, Math.PI * 2, true);
-        ctx.fill();
-        ctx.strokeStyle=`rgba(255,255,255,${2-rc})`;
-        ctx.beginPath();
-        ctx.arc(np[0],np[1],80*rc,0, Math.PI * 2, true);
-        ctx.stroke();
+        ec.render(new NoteCanvasObject(...np,c));
     }
 }
 function drawTexts(){
     ctx.fillStyle="rgb(255,255,255)";
     ctx.font="50px 'Courier New'";
     ctx.textAlign="center";
-    ctx.fillText(`${combo}`,1600,60);
-    ctx.fillText(`COMBO`,1600,120);
-    ctx.textAlign="right";
-    ctx.fillText(`Point: ${(points_got/points_total*100000).toFixed(0)}`,3150,60);
-    ctx.fillText(`Music: ${(sec/song!.length*100).toFixed(2)}%`,3150,120);
+    renderText(`${combo}`,1600,60,"center");
+    renderText(`COMBO`,1600,120,"center");
+    renderText(`Point: ${(points_got/points_total*100000).toFixed(0)}`,3150,60,"right");
+    renderText(`Music: ${(sec/song!.length*100).toFixed(2)}%`,3150,120,"right");
     if(debug){
         trueTps=tickTimes.length;
+        let c=new RGBAColor(255,0,255);
         if((trueTps/tps)>=0.00){
-            ctx.fillStyle="rgb(255,0,255)";
+            c=new RGBAColor(255,0,255);
         }
         if((trueTps/tps)>0.30){
-            ctx.fillStyle="rgb(255,0,63)";
+            c=new RGBAColor(255,0,63);
         }
         if((trueTps/tps)>0.60){
-            ctx.fillStyle="rgb(255,0,0)";
+            c=new RGBAColor(255,0,0);
         }
         if((trueTps/tps)>0.90){
-            ctx.fillStyle="rgb(255,127,0)";
+            c=new RGBAColor(255,127,0);
         }
         if((trueTps/tps)>0.95){
-            ctx.fillStyle="rgb(255,255,0)";
+            c=new RGBAColor(255,255,0);
         }
         if((trueTps/tps)>0.999){
-            ctx.fillStyle="rgb(0,255,0)";
+            c=new RGBAColor(0,255,0);
         }
         if((trueTps/tps)>0.99999){
-            ctx.fillStyle="rgb(0,255,255)";
+            c=new RGBAColor(0,255,255);
         }
-        ctx.fillText(`TPS: ${trueTps.toFixed(2)}/${tps}`,3150,180);
-        ctx.fillStyle="rgb(255,255,255)";
-        ctx.fillText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now()-startTime)/1000).toFixed(3)} Music: ${sound_bg!.currentTime.toFixed(3)}`,3150,240);
+        renderText(`TPS: ${trueTps.toFixed(2)}/${tps}`,3150,180,"right",50,c);
+        renderText(`Sec: ${sec.toFixed(3)} Paused: ${paused_time.toFixed(3)} Total: ${((Date.now()-startTime)/1000).toFixed(3)} Music: ${sound_bg!.currentTime.toFixed(3)}`,3150,240,"right");
     }
 }
 function parsePath(n:IPath){
@@ -411,18 +378,16 @@ function parseSong(){
     notes_total=song.notes.length;
 }
 function nextFrame(){
-    ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillRect(0,0,3200,1800);
+    ec.clear();
 }
 async function main(){
-    var canvas:HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
+    let id=getQueryString("id");
+    document.getElementById("canvas_box")!.style.backgroundImage=`url("${id}.png")`;
+    let canvas:HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
-    ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillRect(0,0,3200,1800);
-    ctx.fillStyle="rgb(200,200,200)";
-    ctx.font="200px 'Courier New'";
-    ctx.textAlign="center";
-    ctx.fillText("游戏正在加载",1600,900);
+    ec=new EnhancedContent(ctx);
+    ec.clear();
+    renderText("游戏正在加载",1600,900,"center",200,new RGBAColor(200,200,200));
     bus.on("hit",function(e) {
         combo++;
         max_combo=Math.max(combo,max_combo);
@@ -540,24 +505,20 @@ async function main(){
             });
         }
     });
-    let id=getQueryString("id");
     if(id==null){
-        ctx.fillStyle="rgb(0,0,0)";
-        ctx.fillRect(0,0,3200,1800);
-        ctx.fillStyle="rgb(200,200,200)";
-        ctx.fillText("游戏加载错误，请尝试刷新",1600,900);
+        ec.clear();
+        renderText("游戏加载错误，请尝试刷新",1600,900,"center",200,new RGBAColor(200,200,200));
         throw new Error("No data file given.");
     }
     await fetch(`./${id}.json`).then(async (response) => song=await response.json());
     if(song==undefined){
-        ctx.fillStyle="rgb(0,0,0)";
-        ctx.fillRect(0,0,3200,1800);
-        ctx.fillStyle="rgb(200,200,200)";
-        ctx.fillText("游戏加载错误，请尝试刷新",1600,900);
+        ec.clear();
+        renderText("游戏加载错误，请尝试刷新",1600,900,"center",200,new RGBAColor(200,200,200));
         throw new Error("Data file has nothing or corrupted or not exist.");
     }
     if(song.script){
-        await fetch(`./${song.script}`).then(async(response)=>eval(await response.text()));
+        await import(`./${song.script}`);
+        //await fetch(`./${song.script}`).then(async(response)=>eval(await response.text()));
     }
     sound_hit=[];
     for(let i=0;i<16;i++){
@@ -589,16 +550,7 @@ async function main(){
         e.volume=1*base_volume;
     });
     parseSong();
-    ctx.fillStyle="rgb(0,0,0)";
-    ctx.fillRect(0,0,3200,1800);
-    //let centerNote=new Note(new StaticPath(3600,1600,900),3600); 
-    /*
-    notes.push(new Note(new ArcPath(1,780,-200,-40,900),3));
-    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4));
-    notes.push(new Note(new ArcPath(1,780,-200,-40,900),4.5));
-    notes.push(new Note(new ArcPath(1,780,-200,-40,900),5));
-    */
-    //drawnote(new Note(new StaticPath(800,450),0,3600));
+    ec.clear();
     let timer=setInterval(()=>{if(sound_bg!.currentTime>0){clearInterval(timer);bus.emit("start",null);}},1);
     sound_bg!.play().catch(async e => {
         alert("您未开启音频自动播放，请关闭弹窗后点击屏幕开始游戏。");
@@ -631,7 +583,7 @@ async function main(){
                 element.a=12;
                 element.aa=sec;
             }
-            drawnote(element);
+            drawNote(element);
             drawA(element);
         });
         notes.forEach(element => {
@@ -646,7 +598,7 @@ async function main(){
                 element.a=-1;
                 bus.emit("miss",null);
             }
-            drawnote(element);
+            drawNote(element);
         });
         notes.forEach(element => {
             drawA(element);
@@ -659,3 +611,5 @@ async function main(){
         }
     },1000/tps);});
 }
+window.onload=main;
+export {EventBus, bus, renderText, drawNote, Note, Path, ctx, drawA, drawClackLine, Handler, tps, paused, sec};

@@ -1,3 +1,4 @@
+import {bus,renderText} from './player.js';
 bus.on("tick",t=>{
     if(t>=0&&t<=5){
         renderText("欢迎来到CForce的新手教程！",1600,900,"center",50,(t<1?t:t>4?5-t:1));
@@ -8,7 +9,7 @@ bus.on("tick",t=>{
     if(t>=10&&t<=15){
         renderText("CForce的音符分为Click和Clack",1600,1100,"center",50,(t<11?t-10:t>14?15-t:1));
     }
-    if(t>=12.5&&t<=15){
+    if(t>=15&&t<=20){
         renderText("每个音符可以出现在Track A或者Track B上",1600,1100,"center",50,(t<16?t-15:t>19?20-t:1));
     }
     if(t>=20&&t<=25){

@@ -1,5 +1,13 @@
 #main_canvas{
-    width: 100vw; 
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top:0;bottom:0; /* vertical center */
+    left:0;right:0; /* horizontal center */
+    backdrop-filter: blur(10vw);
+}
+#canvas_box{
+    width: 100vw;
     height: 56.25vw; /* height:width ratio = 9/16 = .5625  */
     max-height: 100vh;
     max-width: 177.78vh; /* 16/9 = 1.778 */
@@ -7,6 +15,9 @@
     position: absolute;
     top:0;bottom:0; /* vertical center */
     left:0;right:0; /* horizontal center */
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-origin: content-box;
 }
 html,body{
     overflow:hidden;
