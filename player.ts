@@ -288,7 +288,7 @@ function drawA(note:Note){
         }else if(note.a==2){
             c=new RGBAColor(0,167,195,2-rc);
         }
-        ec.render(new NoteCanvasObject(...np,c));
+        ec.render(new NoteCanvasObject(...np,c,rc*88));
     }
 }
 function drawTexts(){
