@@ -23,5 +23,10 @@
         "id":"beeper",
         "name":"调试-节拍",
         "difficulty":42
+    },
+    {
+        "id":"test",
+        "name":"调试-有问题的谱面",
+        "difficulty": 42
     }
 ]

@@ -4,14 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8a94ebaf-a6ff-4e61-b948-677c1f92cc31" name="Changes" comment="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!">
-      <change afterPath="$PROJECT_DIR$/doc/chart/index_zh_cn.md" afterDir="false" />
+    <list default="true" id="8a94ebaf-a6ff-4e61-b948-677c1f92cc31" name="Changes" comment="Animation note fill support">
+      <change afterPath="$PROJECT_DIR$/test.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/catext.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/catext.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo.json" beforeDir="false" afterPath="$PROJECT_DIR$/demo.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/data.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/player.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player.ts" beforeDir="false" afterPath="$PROJECT_DIR$/player.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/player/gui.js" beforeDir="false" afterPath="$PROJECT_DIR$/player/gui.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/player/gui.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -54,7 +53,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "vcs.Git",
     "ts.external.directory.path": "/Users/vincent/Documents/VSCode/cforce/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
@@ -113,7 +112,10 @@
       <option name="presentableId" value="Default" />
       <updated>1689574785281</updated>
       <workItem from="1689583509778" duration="316000" />
-      <workItem from="1689585199301" duration="30412000" />
+      <workItem from="1689585199301" duration="32450000" />
+      <workItem from="1689839602318" duration="325000" />
+      <workItem from="1689840048397" duration="839000" />
+      <workItem from="1689843685965" duration="1615000" />
     </task>
     <task id="LOCAL-00001" summary="Music full support &amp; Introduction updated">
       <option name="closed" value="true" />
@@ -155,7 +157,15 @@
       <option name="project" value="LOCAL" />
       <updated>1689760245826</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Animation note fill support">
+      <option name="closed" value="true" />
+      <created>1689765565490</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1689765565490</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,18 +198,7 @@
     <MESSAGE value="Remaked gui system." />
     <MESSAGE value="Update some file" />
     <MESSAGE value="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug hotfix!!!!!!!!!!!!!!!!!!!!!!!!!" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/player/gui.ts</url>
-          <line>54</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Animation note fill support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Animation note fill support" />
   </component>
 </project>

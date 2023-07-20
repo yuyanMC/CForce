@@ -388,6 +388,7 @@ async function main(){
     let canvas:HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec=new EnhancedContent(ctx);
+    ec.setBackGroundColor("rgba(0,0,0,0.5)");
     ec.clear();
     renderText("游戏正在加载",1600,900,"center",200,new RGBAColor(200,200,200));
     bus.on("hit",function(e) {
@@ -532,18 +533,9 @@ async function main(){
         sound_bg=new Audio("./blank.mp3");
     }
     if(/[\s\S]*(iPhone|iPad|iPod)[\s\S]*/.test(navigator.userAgent)){
-        alert("因为苹果设备的特殊性，请您关闭弹窗后，点击屏幕，继续游戏。");
-        await new Promise((resolve)=>{document.onclick=(e)=>{resolve(null);document.onclick=null;}});
-        await sound_bg.play();
+        sound_bg.load();
         for(let i=0;i<16;i++){
-            sound_hit[i].volume=0;
-            sound_hit[i].play();
-        }
-        sound_bg.pause();
-        sound_bg.currentTime=0;
-        for(let i=0;i<16;i++){
-            sound_hit[i].pause();
-            sound_hit[i].currentTime=0;
+            sound_hit[i].load();
         }
     }
     await new Promise((r)=>{let t=setInterval(()=>{if(sound_hit![0].readyState==HTMLMediaElement.HAVE_ENOUGH_DATA&&sound_bg!.readyState==HTMLMediaElement.HAVE_ENOUGH_DATA){clearInterval(t);r(null);}},10);});

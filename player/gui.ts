@@ -43,6 +43,7 @@ class NoteCanvasObject implements CanvasObject{
         ctx.beginPath();
         ctx.arc(this.x,this.y,this.r,0, Math.PI * 2, true);
         ctx.fill();
+        ctx.lineWidth=2;
         ctx.strokeStyle=`rgba(255,255,255,${this.f.getColor()[3]})`;
         ctx.beginPath();
         ctx.arc(this.x,this.y,this.r/1.1,0, Math.PI * 2, true);
@@ -72,8 +73,10 @@ class ClackLineCanvasObject implements CanvasObject{
             this.fp=0;
         }
         let np=this.p.cal(this.tp);
+        ctx.lineWidth=5;
+        ctx.beginPath();
         ctx.moveTo(...np);
-        for(let i=this.tp;i>=this.fp;i+=(this.fp-this.tp)/tps){
+        for(let i=this.tp;i>=this.fp&&i<=this.tp;i+=(this.fp-this.tp)/tps){
             np=this.p.cal(i);
             ctx.strokeStyle="rgb(255,255,255)"
             ctx.lineTo(...np);
