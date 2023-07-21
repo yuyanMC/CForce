@@ -14,14 +14,14 @@ function fgetQueryString(name) {
     if (r != null) {
         return decodeURIComponent(r[2]);
     }
-    ;
     return null;
 }
 function fmain() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        let songs = [];
         let id = fgetQueryString("i");
+        document.getElementById("gameBox").style.backgroundImage = `url("${id}.png")`;
+        let songs = [];
         let perfect = fgetQueryString("p");
         let good = fgetQueryString("g");
         let miss = fgetQueryString("m");

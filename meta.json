@@ -1,0 +1,10 @@
+{
+  "CVer": 3,
+  "CVerStr": "v0.0.1-b0.2-a5",
+  "CChangeLog": [
+    {
+      "ver": 3,
+      "log": "更新了判定，现在每次点击只能判定一个音符\n更新了新谱面：GeometryDash/At The Speed Of Light(15 sec ver) by 3pow3"
+    }
+  ]
+}

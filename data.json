@@ -5,6 +5,11 @@
         "difficulty":1
     },
     {
+        "id": "atthespeedoflight",
+        "name": "At The Speed Of Light",
+        "difficulty": 7
+    },
+    {
         "id":"demo",
         "name":"DEMO",
         "difficulty":1

@@ -15,7 +15,7 @@ function smain() {
         yield fetch("data.json").then((response) => __awaiter(this, void 0, void 0, function* () { return songs = yield response.json(); }));
         // 获取歌曲列表容器
         const songList = document.getElementById('song_list');
-        let chosen = -1;
+        let chosen = 0;
         // 创建歌曲列表项并添加到容器中
         for (let i = 0; i < songs.length; i++) {
             const li = document.createElement('p');
@@ -36,6 +36,7 @@ function smain() {
                 button.innerText = "开始";
                 div.appendChild(button);
                 document.getElementById("operation").innerHTML = div.innerHTML;
+                document.getElementById("gameBox").style.backgroundImage = `url("${songs[chosen].id}.png")`;
             };
             songList.appendChild(li);
             //songList.appendChild(document.createElement("br"))

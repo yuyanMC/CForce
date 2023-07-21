@@ -1,18 +1,16 @@
-// 定义歌曲接口
+
 interface Song {
     id: string;
     name: string;
     difficulty: number;
 }
-
   // 示例歌曲列表
 async function smain(){
     let songs: Song[] = [];
     await fetch("data.json").then(async (response) => songs=await response.json());
-    
     // 获取歌曲列表容器
     const songList = document.getElementById('song_list') as HTMLUListElement;
-    let chosen=-1;
+    let chosen=0;
     // 创建歌曲列表项并添加到容器中
     for(let i=0;i<songs.length;i++){
         const li = document.createElement('p');
@@ -33,6 +31,7 @@ async function smain(){
             button.innerText="开始";
             div.appendChild(button);
             document.getElementById("operation")!.innerHTML=div.innerHTML;
+            document.getElementById("gameBox")!.style.backgroundImage=`url("${songs[chosen].id}.png")`;
         };
         songList.appendChild(li);
         //songList.appendChild(document.createElement("br"))
@@ -42,7 +41,7 @@ async function smain(){
             console.log("Redirecting...");
             window.location.replace(`./player.html?id=${songs[chosen].id}`);
         }
-    })
+    });
     /*
     // 获取选择按钮
     const selectButton = document.getElementById('select_button') as HTMLButtonElement;

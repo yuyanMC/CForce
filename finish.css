@@ -15,6 +15,28 @@ body{
     overflow-x: hidden;
     color:white;
 }
+#gameBox{
+    width: 100vw;
+    height: 56.25vw; /* height:width ratio = 9/16 = .5625  */
+    max-height: 100vh;
+    max-width: 177.78vh; /* 16/9 = 1.778 */
+    margin: auto;
+    position: absolute;
+    top:0;bottom:0; /* vertical center */
+    left:0;right:0; /* horizontal center */
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-origin: content-box;
+}
+#innerBox{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top:0;bottom:0; /* vertical center */
+    left:0;right:0; /* horizontal center */
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10vw);
+}
 #data{
     animation: slideX 2s alternate;
     position: relative;
@@ -24,6 +46,7 @@ body{
     margin-left: 22%;
     margin-right: 22%;
     border: white 2px solid;
+    background-color: rgba(0,0,0,0.5);
 }
 #name{
     position: absolute;
@@ -77,6 +100,7 @@ body{
     margin-left: 22%;
     margin-right: 22%;
     border: white 2px solid;
+    background-color: rgba(0,0,0,0.5);
 }
 button{
     position: absolute;

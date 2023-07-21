@@ -389,6 +389,9 @@ function main() {
             let fetched = false;
             if (e.keyCode == 65) {
                 notes.forEach((element) => {
+                    if (fetched) {
+                        return;
+                    }
                     if (element.a || element.t != "A") {
                         return;
                     }
@@ -411,6 +414,9 @@ function main() {
             }
             if (e.keyCode == 76) {
                 notes.forEach((element) => {
+                    if (fetched) {
+                        return;
+                    }
                     if (element.a || element.t != "B") {
                         return;
                     }

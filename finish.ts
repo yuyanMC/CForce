@@ -10,13 +10,14 @@ function fgetQueryString(name: string) {
     let r = window.location.search.substr(1).match(reg);
     if (r != null) {
         return decodeURIComponent(r[2]);
-    };
+    }
     return null;
 }
 
 async function fmain(){
-    let songs: Song[] = [];
     let id=fgetQueryString("i")!;
+    document.getElementById("gameBox")!.style.backgroundImage=`url("${id}.png")`;
+    let songs: Song[] = [];
     let perfect=fgetQueryString("p")!;
     let good=fgetQueryString("g")!;
     let miss=fgetQueryString("m")!;
