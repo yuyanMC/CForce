@@ -2,7 +2,7 @@ import "./player.css";
 import hit from "../public/sounds/hit.mp3";
 import blank from "../public/sounds/blank.mp3";
 
-import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from '../public/player/gui';
+import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
 
 type Handler<T = any> = (val: T) => void;
 
@@ -579,7 +579,7 @@ async function main() {
         throw new Error("Data file has nothing or corrupted or not exist.");
     }
     if (song.script) {
-        await import(`./scripts/${song.script}`);
+        await import(`./scripts/${song.script}.ts`);
         //await fetch(`./${song.script}`).then(async(response)=>eval(await response.text()));
     }
     sound_hit = [];

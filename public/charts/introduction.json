@@ -143,5 +143,5 @@
     ],
     "bgsound":"introduction.wav",
     "length":45,
-    "script":"introduction.ts"
+    "script":"introduction"
 }

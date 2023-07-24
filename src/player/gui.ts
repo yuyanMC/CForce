@@ -1,4 +1,4 @@
-import {Path, tps} from "../../src/player";
+import {Path, tps} from "../player.ts";
 
 class EnhancedContent{
     private ctx: CanvasRenderingContext2D;
