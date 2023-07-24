@@ -1,15 +1,8 @@
 import "./player.css";
-import hit from "./sounds/hit.mp3";
-import blank from "./sounds/blank.mp3";
+import hit from "../public/sounds/hit.mp3";
+import blank from "../public/sounds/blank.mp3";
 
-import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
-
-// rollup help
-if(false){
-    import(`./scripts/${0}.ts`);
-    import(`./sounds/${0}.ts`);
-}
-
+import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from '../public/player/gui';
 
 type Handler<T = any> = (val: T) => void;
 

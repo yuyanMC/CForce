@@ -8,6 +8,7 @@ export default defineConfig({
                 selector: resolve(__dirname, 'selector.html'),
                 player: resolve(__dirname, 'player.html'),
                 finish: resolve(__dirname, 'finish.html'),
+                rollup: resolve(__dirname, 'rollup.html'),
             },
         },
     },

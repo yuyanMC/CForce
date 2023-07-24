@@ -1,1 +1,1 @@
-declare module "./sounds/*.mp3"
+declare module "../public/sounds/*.mp3"

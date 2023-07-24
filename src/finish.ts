@@ -24,7 +24,7 @@ async function fmain() {
     let miss = fgetQueryString("m")!;
     let max_combo = fgetQueryString("c")!;
     let point = fgetQueryString("t")!;
-    await import("./data/data.json").then(async (response) => songs = response.default);
+    await import("../public/data/data.json").then(async (response) => songs = response.default);
     let song_name = "<Unknown>";
     songs.forEach(e => {
         if (e.id == id) {
