@@ -680,4 +680,4 @@ async function main() {
 }
 
 window.onload = main;
-export {EventBus, bus, renderText, drawNote, Note, Path, ctx, drawA, drawClackLine, Handler, tps, paused, sec};
+export {EventBus, bus, renderText, drawNote, Note, Path, ctx, drawA, drawClackLine, tps, paused, sec};
