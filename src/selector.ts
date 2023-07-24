@@ -1,4 +1,4 @@
-require("./selector.css");
+import "./selector.css";
 interface Song {
     id: string;
     name: string;
@@ -8,7 +8,7 @@ interface Song {
 // 示例歌曲列表
 async function smain() {
     let songs: Song[] = [];
-    await fetch(require("./data/data.json")).then(async (response) => songs = await response.json());
+    await import("./data/data.json").then(async (response) => songs = response.default);
     // 获取歌曲列表容器
     const songList = document.getElementById('song_list') as HTMLUListElement;
     let chosen = 0;
@@ -18,7 +18,7 @@ async function smain() {
         li.classList.add("li");
         li.dataset.n = i.toString();
         li.innerText = `${songs[i].name}`;
-        li.onclick = function (e) {
+        li.onclick = async function (e) {
             e.preventDefault();
             chosen = parseInt((e.target as HTMLParagraphElement).dataset["n"]!);
             const div = document.createElement("div");
@@ -32,7 +32,7 @@ async function smain() {
             button.innerText = "开始";
             div.appendChild(button);
             document.getElementById("operation")!.innerHTML = div.innerHTML;
-            document.getElementById("gameBox")!.style.backgroundImage = `url(${require("./images/"+songs[chosen].id+".png")})`;
+            document.getElementById("gameBox")!.style.backgroundImage = "url("+(await import("./images/"+songs[chosen].id+".png")).default+")";
         };
         songList.appendChild(li);
         //songList.appendChild(document.createElement("br"))

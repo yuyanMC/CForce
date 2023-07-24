@@ -1,4 +1,6 @@
-require("./player.css");
+import "./player.css";
+import hit from "./sounds/hit.mp3";
+import blank from "./sounds/blank.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
 
@@ -435,7 +437,7 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${require("./images/"+id+".png")})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import("./images/"+id+".png")).default})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
@@ -570,7 +572,7 @@ async function main() {
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("No data file given.");
     }
-    await fetch(require(`./charts/${id}.json`)).then(async (response) => song = await response.json());
+    await import(`./charts/${id}.json`).then(async (response) => song = response.default);
     if (song == undefined) {
         ec.clear();
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
@@ -582,12 +584,12 @@ async function main() {
     }
     sound_hit = [];
     for (let i = 0; i < 16; i++) {
-        sound_hit.push(new Audio(require("./sounds/hit.mp3")));
+        sound_hit.push(new Audio(hit));
     }
     if (song!.bgsound) {
-        sound_bg = new Audio(require("./sounds/"+song!.bgsound));
+        sound_bg = new Audio((await import("./sounds/"+song!.bgsound)).default);
     } else {
-        sound_bg = new Audio(require("./sounds/blank.mp3"));
+        sound_bg = new Audio(blank);
     }
     if (/[\s\S]*(iPhone|iPad|iPod)[\s\S]*/.test(navigator.userAgent)) {
         sound_bg.load();

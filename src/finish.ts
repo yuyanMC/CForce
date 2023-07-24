@@ -1,4 +1,4 @@
-require("./finish.css");
+import "./finish.css";
 // 定义歌曲接口
 interface Song {
     id: string;
@@ -17,14 +17,14 @@ function fgetQueryString(name: string) {
 
 async function fmain() {
     let id = fgetQueryString("i")!;
-    document.getElementById("gameBox")!.style.backgroundImage = `url("${require("./images/"+id+".png")}")`;
+    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import("./images/"+id+".png")).default}")`;
     let songs: Song[] = [];
     let perfect = fgetQueryString("p")!;
     let good = fgetQueryString("g")!;
     let miss = fgetQueryString("m")!;
     let max_combo = fgetQueryString("c")!;
     let point = fgetQueryString("t")!;
-    await fetch(require("./data/data.json")).then(async (response) => songs = await response.json());
+    await import("./data/data.json").then(async (response) => songs = response.default);
     let song_name = "<Unknown>";
     songs.forEach(e => {
         if (e.id == id) {
