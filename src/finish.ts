@@ -17,7 +17,7 @@ function fgetQueryString(name: string) {
 
 async function fmain() {
     let id = fgetQueryString("i")!;
-    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`./images/${id}.png`)).default}")`;
+    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`../public/images/${id}.png`)).default}")`;
     let songs: Song[] = [];
     let perfect = fgetQueryString("p")!;
     let good = fgetQueryString("g")!;

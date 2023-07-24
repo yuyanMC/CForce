@@ -32,7 +32,7 @@ async function smain() {
             button.innerText = "开始";
             div.appendChild(button);
             document.getElementById("operation")!.innerHTML = div.innerHTML;
-            document.getElementById("gameBox")!.style.backgroundImage = "url("+(await import(`./images/${songs[chosen].id}.png`)).default+")";
+            document.getElementById("gameBox")!.style.backgroundImage = "url("+(await import(`../public/images/${songs[chosen].id}.png`)).default+")";
         };
         songList.appendChild(li);
         //songList.appendChild(document.createElement("br"))

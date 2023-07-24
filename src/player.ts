@@ -437,7 +437,7 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`./images/${id}.png`)).default})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`../public/images/${id}.png`)).default})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
