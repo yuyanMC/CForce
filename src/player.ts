@@ -4,6 +4,13 @@ import blank from "./sounds/blank.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
 
+// rollup help
+if(false){
+    import(`./scripts/${0}.ts`);
+    import(`./sounds/${0}.ts`);
+}
+
+
 type Handler<T = any> = (val: T) => void;
 
 class EventBus<Events extends Record<string, any>> {
@@ -437,7 +444,7 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import("./images/"+id+".png")).default})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`./images/${id}.png`)).default})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
@@ -587,7 +594,7 @@ async function main() {
         sound_hit.push(new Audio(hit));
     }
     if (song!.bgsound) {
-        sound_bg = new Audio((await import("./sounds/"+song!.bgsound)).default);
+        sound_bg = new Audio((await import(`./sounds/${song!.bgsound}`)).default);
     } else {
         sound_bg = new Audio(blank);
     }
