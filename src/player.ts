@@ -1,6 +1,6 @@
 import "./player.css";
-import hit from "../public/sounds/hit.mp3";
-import blank from "../public/sounds/blank.mp3";
+import hit from "../public/assets/sounds/hit.mp3";
+import blank from "../public/assets/sounds/blank.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
 

@@ -8,7 +8,7 @@ interface Song {
 // 示例歌曲列表
 async function smain() {
     let songs: Song[] = [];
-    await import("../public/data/data.json").then(async (response) => songs = response.default);
+    await import("../public/assets/data/data.json").then(async (response) => songs = response.default);
     // 获取歌曲列表容器
     const songList = document.getElementById('song_list') as HTMLUListElement;
     let chosen = 0;
