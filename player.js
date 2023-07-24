@@ -509,20 +509,26 @@ function main() {
                 sound_hit[i].load();
             }
         }
-        yield new Promise((r) => { let t = setInterval(() => { if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
-            clearInterval(t);
-            r(null);
-        } }, 10); });
+        yield new Promise((r) => {
+            let t = setInterval(() => {
+                if (sound_hit[0].readyState == HTMLMediaElement.HAVE_ENOUGH_DATA && sound_bg.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                    clearInterval(t);
+                    r(null);
+                }
+            }, 10);
+        });
         sound_bg.volume = 0.5 * base_volume;
         sound_hit.forEach(e => {
             e.volume = 1 * base_volume;
         });
         parseSong();
         ec.clear();
-        let timer = setInterval(() => { if (sound_bg.currentTime > 0) {
-            clearInterval(timer);
-            bus.emit("start", null);
-        } }, 1);
+        let timer = setInterval(() => {
+            if (sound_bg.currentTime > 0) {
+                clearInterval(timer);
+                bus.emit("start", null);
+            }
+        }, 1);
         sound_bg.play().catch((e) => __awaiter(this, void 0, void 0, function* () {
             alert("您未开启音频自动播放，请关闭弹窗后点击屏幕开始游戏。");
             yield new Promise((resolve) => {

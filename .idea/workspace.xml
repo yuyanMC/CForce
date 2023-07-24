@@ -5,27 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8a94ebaf-a6ff-4e61-b948-677c1f92cc31" name="Changes" comment="v0.0.1-b0.2-a5">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/atthespeedoflight.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/atthespeedoflight.mp3" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/atthespeedoflight.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/meta.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/data.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finish.css" beforeDir="false" afterPath="$PROJECT_DIR$/finish.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finish.html" beforeDir="false" afterPath="$PROJECT_DIR$/finish.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finish.js" beforeDir="false" afterPath="$PROJECT_DIR$/finish.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/finish.ts" beforeDir="false" afterPath="$PROJECT_DIR$/finish.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/player.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/meta.json" beforeDir="false" afterPath="$PROJECT_DIR$/meta.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/player.ts" beforeDir="false" afterPath="$PROJECT_DIR$/player.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selector.css" beforeDir="false" afterPath="$PROJECT_DIR$/selector.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selector.html" beforeDir="false" afterPath="$PROJECT_DIR$/selector.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selector.js" beforeDir="false" afterPath="$PROJECT_DIR$/selector.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/selector.ts" beforeDir="false" afterPath="$PROJECT_DIR$/selector.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,6 +54,11 @@
     "settings.editor.selected.configurable": "vcs.Git",
     "ts.external.directory.path": "/Users/vincent/Documents/VSCode/cforce/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "ChangesTree.GroupingKeys": [
+      "directory"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -134,7 +123,8 @@
       <workItem from="1689585199301" duration="32450000" />
       <workItem from="1689839602318" duration="325000" />
       <workItem from="1689840048397" duration="839000" />
-      <workItem from="1689843685965" duration="7416000" />
+      <workItem from="1689843685965" duration="8675000" />
+      <workItem from="1689937252363" duration="6595000" />
     </task>
     <task id="LOCAL-00001" summary="Music full support &amp; Introduction updated">
       <option name="closed" value="true" />
@@ -192,7 +182,15 @@
       <option name="project" value="LOCAL" />
       <updated>1689845464321</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="v0.0.1-b0.2-a5">
+      <option name="closed" value="true" />
+      <created>1689917920842</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1689917920842</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,6 +207,31 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="origin/master" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="HEAD" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
