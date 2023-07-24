@@ -437,7 +437,7 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`../public/images/${id}.png`)).default})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`../public/assets/images/${id}.png`)).default})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
@@ -572,7 +572,7 @@ async function main() {
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("No data file given.");
     }
-    await import(`../public/charts/${id}.json`).then(async (response) => song = response.default);
+    await import(`../public/assets/charts/${id}.json`).then(async (response) => song = response.default);
     if (song == undefined) {
         ec.clear();
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
