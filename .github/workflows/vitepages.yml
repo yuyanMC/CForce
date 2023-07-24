@@ -1,9 +1,9 @@
 name: Build with Webpack and Deploy on Github Pages
 on:
   push:
-    branches: [ "webpack" ]
+    branches: [ "vite" ]
   pull_request:
-    branches: [ "webpack" ]
+    branches: [ "vite" ]
 jobs:
   build:
     runs-on: ubuntu-latest
