@@ -587,7 +587,7 @@ async function main() {
         sound_hit.push(new Audio(hit));
     }
     if (song!.bgsound) {
-        sound_bg = new Audio((await import(`./sounds/${song!.bgsound}`)).default);
+        sound_bg = new Audio((await import(`./sounds/${song!.bgsound}.mp3`)).default);
     } else {
         sound_bg = new Audio(blank);
     }

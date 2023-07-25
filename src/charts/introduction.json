@@ -141,7 +141,7 @@
             "ho":0.5
         }
     ],
-    "bgsound":"introduction.mp3",
+    "bgsound":"introduction",
     "length":45,
     "script":"introduction"
 }

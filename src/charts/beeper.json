@@ -110,6 +110,6 @@
             "ho":0.5
         }
     ],
-    "bgsound":"beeper.mp3",
+    "bgsound":"beeper",
     "length":10
 }
