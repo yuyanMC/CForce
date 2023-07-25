@@ -3,5 +3,5 @@
     "animationNotes":[],
     "bgsound":false,
     "length":3600,
-    "script":"./timer"
+    "script":"timer"
 }
