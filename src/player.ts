@@ -572,7 +572,7 @@ async function main() {
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("No data file given.");
     }
-    await import(`/charts/${id}.json`).then(async (response) => song = response.default);
+    await import(`./charts/${id}.json`).then(async (response) => song = response.default);
     if (song == undefined) {
         ec.clear();
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
