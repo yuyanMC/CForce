@@ -437,7 +437,7 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`./images/${id}.png`)).default})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await import(`./images/${id}.png`).catch(reason => {return {default:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="}})).default})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
