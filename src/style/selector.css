@@ -4,6 +4,8 @@ html{
 body{
     height: 100%;
     color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.025 * min(100vw, 56.25vw, 100vh, 177.78vh));
 }
 #gameBox{
     width: 100vw;
@@ -25,7 +27,7 @@ body{
     top:0;bottom:0; /* vertical center */
     left:0;right:0; /* horizontal center */
     background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(10vw);
+    backdrop-filter: blur(5em);
 }
 #song_list,#operation{
     position: absolute;
@@ -33,41 +35,45 @@ body{
     height: 92%;
     margin: 2%;
     background-color: rgba(0,0,0,0.5);
-    border: white 2px solid;
+    border: white 0.133em solid;
 }
 #operation{
     left:50%;
+}
+#song_list{
+    overflow: scroll;
 }
 #song_list>p{
     position: relative;
     top: 0;
     left:0;
-    border: white 1px solid;
-    padding: 10px;
-    margin: 10px;
+    border: white 0.067em solid;
+    padding: 1.747%;
+    margin: 1.747%;
+    height: 7.292%;
 }
 #song_list>p:hover{
     background-color: #404040;
     transform: scale(1.2,1.2);
     transform-origin: left;
-    width: calc(100% / 1.2 - 16.75px);
+    width: calc(100% / 1.2 - 2.848%);
 }
 #operation>h1{
-    margin: 20px;
+    margin: 3.494%;
 }
 #operation>h3{
-    margin: 20px;
+    margin: 3.494%;
 }
 #operation>button{
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    bottom: 3.103%;
+    right: 3.494%;
     background-color: black;
     color: white;
     outline: 0;
-    border: white 1px solid;
-    font-size: 20px;
-    padding: 10px;
+    border: white 0.067em solid;
+    font-size: 1em;
+    padding: 1.747%;
 }
 #operation>button:hover{
     transform: scale(1.2);

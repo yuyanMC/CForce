@@ -1,4 +1,4 @@
-import "./finish.css";
+import "./style/finish.css";
 // 定义歌曲接口
 interface Song {
     id: string;

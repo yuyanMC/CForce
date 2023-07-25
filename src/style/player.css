@@ -1,10 +1,16 @@
+body{
+    height: 100%;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.025 * min(100vw, 56.25vw, 100vh, 177.78vh));
+}
 #main_canvas{
     width: 100%;
     height: 100%;
     position: absolute;
     top:0;bottom:0; /* vertical center */
     left:0;right:0; /* horizontal center */
-    backdrop-filter: blur(10vw);
+    backdrop-filter: blur(5em);
 }
 #canvas_box{
     width: 100vw;

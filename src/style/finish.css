@@ -10,10 +10,11 @@ html{
     height: 100%;
 }
 body{
-    background-color: white;
     height: 100%;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: calc(0.025 * min(100vw, 56.25vw, 100vh, 177.78vh));
     overflow-x: hidden;
-    color:white;
 }
 #gameBox{
     width: 100vw;
@@ -27,6 +28,7 @@ body{
     background-repeat: no-repeat;
     background-size: contain;
     background-origin: content-box;
+    overflow: hidden;
 }
 #innerBox{
     width: 100%;
@@ -35,7 +37,7 @@ body{
     top:0;bottom:0; /* vertical center */
     left:0;right:0; /* horizontal center */
     background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(10vw);
+    backdrop-filter: blur(5em);
 }
 #data{
     animation: slideX 2s alternate;
@@ -45,7 +47,7 @@ body{
     height: 46%;
     margin-left: 22%;
     margin-right: 22%;
-    border: white 2px solid;
+    border: white 0.133em solid;
     background-color: rgba(0,0,0,0.5);
 }
 #name{
@@ -83,7 +85,7 @@ body{
     top:40%;
     left:10%;
     font-size: 6em;
-    text-shadow: -10px 10px 3px #808080;
+    text-shadow: -0.067em 0.067em 0.022em #808080;
 }
 #point{
     position: absolute;
@@ -99,30 +101,30 @@ body{
     height: 10%;
     margin-left: 22%;
     margin-right: 22%;
-    border: white 2px solid;
+    border: white 0.133em solid;
     background-color: rgba(0,0,0,0.5);
 }
-button{
+#operation>button{
     position: absolute;
     background-color: black;
     color: white;
     outline: 0;
-    border: white 1px solid;
-    font-size: 20px;
-    padding: 10px;
+    border: white 0.067em solid;
+    font-size: 1em;
+    padding: 1.435%;
 }
 #operation>button:hover{
     transform: scale(1.2);
 }
 #again{
-    left:10px;
-    top:15%;
-    height:70%;
+    left:1.435%;
+    top:15.04%;
+    height:69.92%;
 }
 #next{
-    right:10px;
-    top:15%;
-    height:70%;
+    right:1.435%;
+    top:15.04%;
+    height:69.92%;
 }
 *{
     box-sizing: border-box;

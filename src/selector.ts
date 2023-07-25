@@ -1,4 +1,4 @@
-import "./selector.css";
+import "./style/selector.css";
 interface Song {
     id: string;
     name: string;

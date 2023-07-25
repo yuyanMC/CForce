@@ -1,4 +1,4 @@
-import "./player.css";
+import "./style/player.css";
 import hit from "./sounds/hit.mp3";
 import blank from "./sounds/blank.mp3";
 
