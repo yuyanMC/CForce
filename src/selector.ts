@@ -8,7 +8,7 @@ interface Song {
 // 示例歌曲列表
 async function smain() {
     let songs: Song[] = [];
-    await import("../public/assets/data/data.json").then(async (response) => songs = response.default);
+    await import("./data/data.json").then(async (response) => songs = response.default);
     // 获取歌曲列表容器
     const songList = document.getElementById('song_list') as HTMLUListElement;
     let chosen = 0;
@@ -32,7 +32,7 @@ async function smain() {
             button.innerText = "开始";
             div.appendChild(button);
             document.getElementById("operation")!.innerHTML = div.innerHTML;
-            document.getElementById("gameBox")!.style.backgroundImage = "url("+(await import(`../public/assets/images/${songs[chosen].id}.png`)).default+")";
+            document.getElementById("gameBox")!.style.backgroundImage = "url("+(await import(`./images/${songs[chosen].id}.png`)).default+")";
         };
         songList.appendChild(li);
         //songList.appendChild(document.createElement("br"))

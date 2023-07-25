@@ -17,14 +17,14 @@ function fgetQueryString(name: string) {
 
 async function fmain() {
     let id = fgetQueryString("i")!;
-    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`../public/assets/images/${id}.png`)).default}")`;
+    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`./images/${id}.png`)).default}")`;
     let songs: Song[] = [];
     let perfect = fgetQueryString("p")!;
     let good = fgetQueryString("g")!;
     let miss = fgetQueryString("m")!;
     let max_combo = fgetQueryString("c")!;
     let point = fgetQueryString("t")!;
-    await import("../public/assets/data/data.json").then(async (response) => songs = response.default);
+    await import("./data/data.json").then(async (response) => songs = response.default);
     let song_name = "<Unknown>";
     songs.forEach(e => {
         if (e.id == id) {
