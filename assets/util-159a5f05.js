@@ -1,0 +1,1 @@
+function u(e,t,n,r){return r==t?Math.PI:r<t?Math.PI/2-Math.atan((n-e)/(r-t))+Math.PI:Math.PI/2-Math.atan((n-e)/(r-t))}function a(e){let t=new RegExp("(^|&)"+e+"=([^&]*)(&|$)","i"),n=window.location.search.substr(1).match(t);return n!=null?decodeURIComponent(n[2]):null}export{u as calculateAngle,a as getQueryString};
