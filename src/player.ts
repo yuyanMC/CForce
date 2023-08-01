@@ -15,8 +15,8 @@ let chartLoader:DynamicJsonLoader=new DynamicJsonLoader("charts");
 let scriptLoader:DynamicScriptLoader=new DynamicScriptLoader("scripts");
 let ctx: CanvasRenderingContext2D;
 let chart: Chart;
-const tps: number = 60;
-const autoPlay: boolean = false;
+let tps: number = 60;
+let autoPlay: boolean = false;
 let combo: number = 0;
 /*
 let hitSounds: Array<HTMLAudioElement> | null = null;
@@ -25,20 +25,20 @@ let backgroundMusic: HTMLAudioElement | null = null;
 */
 let hitSoundManager:SoundManager;
 let backgroundMusic:EnhancedAudioContext;
-const hitVolume:number = 0.2;
-const backgroundVolume:number = 0.1;
+let hitVolume:number = 0.2;
+let backgroundVolume:number = 0.1;
 let pointsGot = 0;
 let maxCombo = 0;
 let perfect = 0;
 let good = 0;
 let paused = false;
 let tickTimes: number[] = [];
-const debug = true;
+let debug = true;
 let startTime:number;
 let sec :number;
 let pausedTime = 0;
 let ec: EnhancedContent;
-const bus = new EventBus<{
+let bus = new EventBus<{
     hit: number,
     miss: null,
     tick: number,
@@ -286,6 +286,7 @@ async function main() {
     await new Promise((resolve)=>{document.onclick=()=>{document.onclick=null;resolve(null);}});
     hitSoundManager=new SoundManager(hit);
     backgroundMusic=new EnhancedAudioContext(new AudioContext());
+    await backgroundMusic.actx.suspend();
     await hitSoundManager.load();
     if (song.bgsound) {
         await backgroundMusic.load(await soundLoader.loadAsUrl(song.bgsound));
@@ -346,8 +347,15 @@ async function main() {
         }, 1000 / tps);
     });
     ec.clear();
+    await backgroundMusic.actx.resume();
     backgroundMusic.play();
     bus.emit("start",null);
+}
+
+if(debug){
+    globalThis.cinject=(k:string,v:any)=>{
+        eval(`${k}=${v}`);
+    }
 }
 
 window.onload = main;
