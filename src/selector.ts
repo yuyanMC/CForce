@@ -6,7 +6,7 @@ interface Song {
 }
 
 // 示例歌曲列表
-async function smain() {
+async function main() {
     let songs: Song[] = [];
     await import("./data/data.json").then(async (response) => songs = response.default);
     // 获取歌曲列表容器
@@ -54,4 +54,4 @@ async function smain() {
     });
   */
 }
-window.onload=smain;
+window.onload=main;

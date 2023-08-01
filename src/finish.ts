@@ -1,4 +1,5 @@
 import "./style/finish.css";
+import {getQueryString} from "./player/util.ts";
 // 定义歌曲接口
 interface Song {
     id: string;
@@ -6,24 +7,16 @@ interface Song {
     difficulty: number;
 }
 
-function fgetQueryString(name: string) {
-    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
-    let r = window.location.search.substr(1).match(reg);
-    if (r != null) {
-        return decodeURIComponent(r[2]);
-    }
-    return null;
-}
 
-async function fmain() {
-    let id = fgetQueryString("i")!;
+async function main() {
+    let id = getQueryString("i")!;
     document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`./images/${id}.png`).catch(reason => {return {default:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="}})).default}")`;
     let songs: Song[] = [];
-    let perfect = fgetQueryString("p")!;
-    let good = fgetQueryString("g")!;
-    let miss = fgetQueryString("m")!;
-    let max_combo = fgetQueryString("c")!;
-    let point = fgetQueryString("t")!;
+    let perfect = getQueryString("p")!;
+    let good = getQueryString("g")!;
+    let miss = getQueryString("m")!;
+    let max_combo = getQueryString("c")!;
+    let point = getQueryString("t")!;
     await import("./data/data.json").then(async (response) => songs = response.default);
     let song_name = "<Unknown>";
     songs.forEach(e => {
@@ -62,4 +55,4 @@ async function fmain() {
         location.replace(`./selector.html`);
     });
 }
-window.onload=fmain;
+window.onload=main;
