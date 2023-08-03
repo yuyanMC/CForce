@@ -1,0 +1,1 @@
+const{app:n,BrowserWindow:i}=require("electron");require("path");let e;function o(){e=new i({height:600,webPreferences:{preload:null},width:800}),e.loadFile("dist/selector.html"),e.on("closed",()=>{e=null})}n.on("ready",o);n.on("window-all-closed",()=>{process.platform!=="darwin"&&n.quit()});n.on("activate",()=>{e===null&&o()});
