@@ -1,5 +1,5 @@
-import {Path} from "./chart.ts";
-import {tps} from "../player.ts";
+import {Path} from "./chart";
+import {tps} from "../player";
 
 class EnhancedContent{
     private ctx: CanvasRenderingContext2D;

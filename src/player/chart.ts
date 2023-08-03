@@ -1,4 +1,4 @@
-import { calculateAngle } from './util.ts';
+import { calculateAngle } from './util';
 class Chart{
     readonly notes:Note[];
     readonly animationNotes:Note[];

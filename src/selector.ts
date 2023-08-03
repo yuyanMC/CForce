@@ -1,4 +1,5 @@
 import "./style/selector.css";
+import {setQueryString} from "./player/util";
 interface Song {
     id: string;
     name: string;
@@ -40,7 +41,7 @@ async function main() {
     document.addEventListener("click", function (e) {
         if (e.target instanceof HTMLButtonElement) {
             console.log("Redirecting...");
-            window.location.replace(`./player.html?id=${songs[chosen].id}`);
+            location.replace(`./player.html${setQueryString({id:songs[chosen].id})}`);
         }
     });
     /*

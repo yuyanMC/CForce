@@ -1,5 +1,5 @@
 import "./style/finish.css";
-import {getQueryString} from "./player/util.ts";
+import {getQueryString, setQueryString} from "./player/util";
 // 定义歌曲接口
 interface Song {
     id: string;
@@ -49,7 +49,7 @@ async function main() {
     }
     document.getElementById("lvl")!.innerText = rating;
     document.getElementById("again")?.addEventListener("click", e => {
-        location.replace(`./player.html?id=${id}`);
+        location.replace(`./player.html${setQueryString({id:id})}`);
     });
     document.getElementById("next")?.addEventListener("click", e => {
         location.replace(`./selector.html`);

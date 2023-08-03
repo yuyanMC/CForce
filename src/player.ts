@@ -3,11 +3,11 @@ import hit from "./sounds/hit.mp3";
 import blank from "./sounds/blank.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
-import {EventBus} from "./player/event.ts";
-import {Chart, JChart, Note} from "./player/chart.ts";
-import {getQueryString} from "./player/util.ts";
-import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/network.ts";
-import {EnhancedAudioContext, SoundManager} from "./player/sound.ts";
+import {EventBus} from "./player/event";
+import {Chart, JChart, Note} from "./player/chart";
+import {getQueryString,setQueryString} from "./player/util";
+import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/network";
+import {EnhancedAudioContext, SoundManager} from "./player/sound";
 
 let imageLoader:DynamicLoader=new DynamicLoader("images");
 let soundLoader:DynamicLoader=new DynamicLoader("sounds");
@@ -199,9 +199,6 @@ async function main() {
                     bus.emit("hit", 2);
                 }
             });
-            if (!fetched) {
-                bus.emit("miss", null);
-            }
         }
         if (e.keyCode == 76) {
             chart.notes.forEach((element) => {
@@ -223,9 +220,6 @@ async function main() {
                     bus.emit("hit", 2);
                 }
             });
-            if (!fetched) {
-                bus.emit("miss", null);
-            }
         }
     });
     document.addEventListener("keyup", (e) => {
@@ -342,7 +336,7 @@ async function main() {
             if (sec >= song!.length) {
                 clearInterval(mainTimer);
                 paused = true;
-                location.replace(`./finish.html?i=${id}&c=${maxCombo}&t=${(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0)}&p=${perfect}&g=${good}&m=${chart.notesTotal - perfect - good}`);
+                location.replace(`./finish.html${setQueryString({i:id,c:maxCombo,t:(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0),p:perfect,g:good,m:chart.notesTotal - perfect - good})}`);
             }
         }, 1000 / tps);
     });

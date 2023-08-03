@@ -1,4 +1,4 @@
-import {bus,renderText} from "../player.ts";
+import {bus,renderText} from "../player";
 let startTick = Date.now();
 bus.on("start", t => {
     startTick = Date.now();
