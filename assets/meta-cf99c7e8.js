@@ -1,0 +1,2 @@
+const t=8,e="v0.0.1-b0.3-a5",r=[{ver:3,str:"v0.0.1-b0.2-a5",log:`更新了判定，现在每次点击只能判定一个音符
+更新了新谱面：At The Speed Of Light(15 sec ver) 谱师 3pow3`},{ver:4,str:"v0.0.1-b0.3-a1",log:"更新至Vite"},{ver:5,str:"v0.0.1-b0.3-a2",log:"更新了UI，现在所有平台显示效果一致了"},{ver:6,str:"v0.0.1-b0.3-a3",log:"修复了大量bug"},{ver:7,str:"v0.0.1-b0.3-a4",log:"修改了判定，加入了bad判定，取消打空断连判定"},{ver:8,str:"v0.0.1-b0.3-a5",log:"翻新UI"}],o={CVer:8,CVerStr:e,CChangeLog:r};export{r as CChangeLog,t as CVer,e as CVerStr,o as default};
