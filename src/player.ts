@@ -8,6 +8,7 @@ import {Chart, JChart, Note} from "./player/chart";
 import {getQueryString,setQueryString} from "./player/util";
 import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/network";
 import {EnhancedAudioContext, SoundManager} from "./player/sound";
+import {KeyListener,registerKeyListener} from "./player/keyboard";
 
 let imageLoader:DynamicLoader=new DynamicLoader("images");
 let soundLoader:DynamicLoader=new DynamicLoader("sounds");
@@ -31,6 +32,7 @@ let pointsGot = 0;
 let maxCombo = 0;
 let perfect = 0;
 let good = 0;
+let bad=0;
 let paused = false;
 let tickTimes: number[] = [];
 let debug = true;
@@ -50,18 +52,14 @@ function renderText(text: string, x: number, y: number, align: CanvasTextAlign =
 }
 
 function drawNote(note: Note) {
+    if(note.a){
+        return;
+    }
     if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.h + note.p.spd) / note.p.spd > 1) {
         return;
     }
     let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
-    let c: RGBAColor;
-    if (note.t == "A") {
-        c = new RGBAColor(0, 220, 240);
-    } else if (note.t == "B") {
-        c = new RGBAColor(220, 70, 20);
-    } else {
-        c = new RGBAColor(note.f[0], note.f[1], note.f[2]);
-    }
+    let c: RGBAColor= new RGBAColor(note.f[0], note.f[1], note.f[2]);
     ec.render(new NoteCanvasObject(...np, c));
 }
 
@@ -76,20 +74,21 @@ function drawClackLine(note: Note) {
 }
 
 function drawA(note: Note) {
+    if(note.a<=0){
+        return;
+    }
     let ad = sec - note.aa;
+    let np = note.p.cal((note.aa-note.h+note.p.spd) / note.p.spd);
     if (note.a == 12 && ad < note.hi!) {
-        let np = note.p.cal(0);
         let rc = ad / note.hi! + 1;
         let c = new RGBAColor(note.f[0], note.f[1], note.f[2], rc - 1);
         ec.render(new NoteCanvasObject(...np, c));
     } else if (note.a == 11 && ad < note.ho!) {
-        let np = note.p.cal(1);
         let rc = ad / note.ho! + 1;
         let c = new RGBAColor(note.f[0], note.f[1], note.f[2], 2 - rc);
         ec.render(new NoteCanvasObject(...np, c));
     } else if (note.a > 0 && ad < 0.25) {
         let rc = ad / 0.25 + 1;
-        let np = note.p.cal(1);
         let c: RGBAColor = new RGBAColor(0, 0, 0, 0);
         if (note.a == 1) {
             c = new RGBAColor(160, 144, 0, 2 - rc);
@@ -150,7 +149,7 @@ async function main() {
     ec.setBackGroundColor("rgba(0,0,0,0.5)");
     ec.clear();
     renderText("游戏正在加载", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
-    bus.on("hit", function (e) {
+    bus.on("hit", (e)=> {
         combo++;
         maxCombo = Math.max(combo, maxCombo);
         if (e == 1) {
@@ -176,90 +175,103 @@ async function main() {
     });
     bus.on("start", () => {
         startTime = Date.now() - backgroundMusic.actx.currentTime * 1000;
-    })
-    document.addEventListener("keydown", (e) => {
-        let fetched = false;
-        if (e.keyCode == 65) {
-            chart.notes.forEach((element) => {
-                if (fetched) {
-                    return;
-                }
-                if (element.a || element.t != "A") {
-                    return;
-                }
-                if (Math.abs(element.h - sec) <= 0.08) {
-                    fetched = true;
-                    element.a = 1;
-                    element.aa = sec;
-                    bus.emit("hit", 1);
-                } else if (Math.abs(element.h - sec) <= 0.16) {
-                    fetched = true;
-                    element.a = 2;
-                    element.aa = sec;
-                    bus.emit("hit", 2);
-                }
-            });
-        }
-        if (e.keyCode == 76) {
-            chart.notes.forEach((element) => {
-                if (fetched) {
-                    return;
-                }
-                if (element.a || element.t != "B") {
-                    return;
-                }
-                if (Math.abs(element.h - sec) <= 0.08) {
-                    fetched = true;
-                    element.a = 1;
-                    element.aa = sec;
-                    bus.emit("hit", 1);
-                } else if (Math.abs(element.h - sec) <= 0.16) {
-                    fetched = true;
-                    element.a = 2;
-                    element.aa = sec;
-                    bus.emit("hit", 2);
-                }
-            });
-        }
     });
-    document.addEventListener("keyup", (e) => {
-        if (e.keyCode == 65) {
-            chart.notes.forEach((element) => {
-                if (element.a <= 0 || element.t != "A" || element.y != "A") {
-                    return;
+    let trackAKeyListener=new KeyListener("a");
+    trackAKeyListener.onPress=()=>{
+        let fetched=false;
+        chart.notes.forEach((element) => {
+            if (fetched) {
+                return;
+            }
+            if (element.a || element.t != "A") {
+                return;
+            }
+            if (Math.abs(element.h - sec) <= 0.08) {
+                fetched = true;
+                element.a = 1;
+                element.aa = sec;
+                bus.emit("hit", 1);
+            } else if (Math.abs(element.h - sec) <= 0.16) {
+                fetched = true;
+                element.a = 2;
+                element.aa = sec;
+                bus.emit("hit", 2);
+            }else if(Math.abs(element.h - sec) <= 0.32){
+                element.a=11;
+                element.aa=sec;
+                element.ho=0.25;
+                bad++;
+                bus.emit("miss",null);
+            }
+        });
+    };
+    trackAKeyListener.onRelease=()=>{
+        chart.notes.forEach((element) => {
+            if (element.a <= 0 || element.t != "A" || element.y != "A") {
+                return;
+            }
+            if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
+                pointsGot -= element.a == 1 ? 100 : 75;
+                if (element.a == 1) {
+                    perfect--;
+                } else {
+                    good--;
                 }
-                if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
-                    pointsGot -= element.a == 1 ? 100 : 75;
-                    if (element.a == 1) {
-                        perfect--;
-                    } else {
-                        good--;
-                    }
-                    element.a = -1;
-                    element.aa = 0;
-                    bus.emit("miss", null);
+                element.a = -1;
+                element.aa = 0;
+                bus.emit("miss", null);
+            }
+        });
+    };
+    registerKeyListener(trackAKeyListener);
+    let trackBKeyListener=new KeyListener("l");
+    trackBKeyListener.onPress=()=>{
+        let fetched=false;
+        chart.notes.forEach((element) => {
+            if (fetched) {
+                return;
+            }
+            if (element.a || element.t != "B") {
+                return;
+            }
+            if (Math.abs(element.h - sec) <= 0.08) {
+                fetched = true;
+                element.a = 1;
+                element.aa = sec;
+                bus.emit("hit", 1);
+            } else if (Math.abs(element.h - sec) <= 0.16) {
+                fetched = true;
+                element.a = 2;
+                element.aa = sec;
+                bus.emit("hit", 2);
+            }else if(Math.abs(element.h - sec) <= 0.32){
+                element.a=11;
+                element.aa=sec;
+                element.ho=0.25;
+                bad++;
+                bus.emit("miss",null);
+            }
+        });
+    };
+    trackAKeyListener.onRelease=()=>{
+        chart.notes.forEach((element) => {
+            if (element.a <= 0 || element.t != "B" || element.y != "A") {
+                return;
+            }
+            if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
+                pointsGot -= element.a == 1 ? 100 : 75;
+                if (element.a == 1) {
+                    perfect--;
+                } else {
+                    good--;
                 }
-            });
-        }
-        if (e.keyCode == 76) {
-            chart.notes.forEach((element) => {
-                if (element.a <= 0 || element.t != "B" || element.y != "A") {
-                    return;
-                }
-                if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
-                    pointsGot -= element.a == 1 ? 100 : 75;
-                    if (element.a == 1) {
-                        perfect--;
-                    } else {
-                        good--;
-                    }
-                    element.a = -1;
-                    element.aa = 0;
-                    bus.emit("miss", null);
-                }
-            });
-        }
-    });
+                element.a = -1;
+                element.aa = 0;
+                bus.emit("miss", null);
+            }
+        });
+    };
+    registerKeyListener(trackBKeyListener);
     if (id == null) {
         ec.clear();
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
@@ -336,7 +348,7 @@ async function main() {
             if (sec >= song!.length) {
                 clearInterval(mainTimer);
                 paused = true;
-                location.replace(`./finish.html${setQueryString({i:id,c:maxCombo,t:(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0),p:perfect,g:good,m:chart.notesTotal - perfect - good})}`);
+                location.replace(`./finish.html${setQueryString({i:id,c:maxCombo,t:(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0),p:perfect,g:good,b:bad,m:chart.notesTotal - perfect - good})}`);
             }
         }, 1000 / tps);
     });

@@ -27,4 +27,9 @@ function getQueryString(name: string) {
 function setQueryString(obj: {[k:string]:any}){
     return `?e=${encodeURIComponent(AES.encrypt(JSON.stringify(obj),key).toString())}`;
 }
-export {calculateAngle,getQueryString,setQueryString};
+
+async function sleep(ms:number){
+    return new Promise<void>((resolve)=>{setTimeout(()=>{resolve()},ms)});
+}
+
+export {calculateAngle,getQueryString,setQueryString,sleep};

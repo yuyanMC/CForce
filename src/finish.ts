@@ -1,3 +1,9 @@
+import { createApp } from 'vue';
+import App from './finish.vue';
+
+const app = createApp(App);
+app.mount("#app");
+/*
 import "./style/finish.css";
 import {getQueryString, setQueryString} from "./player/util";
 // 定义歌曲接口
@@ -10,10 +16,11 @@ interface Song {
 
 async function main() {
     let id = getQueryString("i")!;
-    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`./images/${id}.png`).catch(reason => {return {default:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="}})).default}")`;
+    document.getElementById("gameBox")!.style.backgroundImage = `url("${(await import(`./images/${id}.png`).catch(() => {return {default:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="}})).default}")`;
     let songs: Song[] = [];
     let perfect = getQueryString("p")!;
     let good = getQueryString("g")!;
+    let bad = getQueryString("b")!;
     let miss = getQueryString("m")!;
     let max_combo = getQueryString("c")!;
     let point = getQueryString("t")!;
@@ -28,6 +35,7 @@ async function main() {
     document.getElementById("mcnum")!.innerText = max_combo;
     document.getElementById("pnum")!.innerText = perfect;
     document.getElementById("gnum")!.innerText = good;
+    document.getElementById("bnum")!.innerText = bad;
     document.getElementById("mnum")!.innerText = miss;
     document.getElementById("point")!.innerText = point;
     let p = parseInt(point);
@@ -48,11 +56,12 @@ async function main() {
         rating = "E";
     }
     document.getElementById("lvl")!.innerText = rating;
-    document.getElementById("again")?.addEventListener("click", e => {
+    document.getElementById("again")?.addEventListener("click", () => {
         location.replace(`./player.html${setQueryString({id:id})}`);
     });
-    document.getElementById("next")?.addEventListener("click", e => {
+    document.getElementById("next")?.addEventListener("click", () => {
         location.replace(`./selector.html`);
     });
 }
 window.onload=main;
+*/

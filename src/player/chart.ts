@@ -14,9 +14,9 @@ class Chart{
             });
             let p: Path = new MultiPath(ps);
             if (element.type !== "I") {
-                this.notes.push(new Note(p, element.h, element.track, element.type, element.al));
+                this.notes.push(new Note(p, element.h, element.track, element.type, element.al,element.track=="A"?[0, 220, 240]:[220, 70, 20]));
             }else{
-                this.notes.push(new Note(p, element.h, element.track, element.type));
+                this.notes.push(new Note(p, element.h, element.track, element.type,0,element.track=="A"?[0, 220, 240]:[220, 70, 20]));
             }
         });
         jChart.animationNotes.forEach(element => {

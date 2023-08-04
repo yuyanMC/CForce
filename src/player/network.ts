@@ -10,7 +10,7 @@ class DynamicLoader{
         if(resource){
             return (await resource()).default;
         }else{
-            throw Error("404 Not Found");
+            return "";
         }
     }
     async loadAsBase64(name:string):Promise<string>{
@@ -26,7 +26,7 @@ class DynamicScriptLoader extends DynamicLoader{
         if(resource){
             return resource();
         }else{
-            throw Error("404 Not Found");
+            return;
         }
     }
 }
@@ -39,7 +39,7 @@ class DynamicJsonLoader extends DynamicLoader{
         if(resource){
             return resource();
         }else{
-            throw Error("404 Not Found");
+            return "";
         }
     }
 }

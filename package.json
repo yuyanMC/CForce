@@ -1,6 +1,6 @@
 {
   "name": "cforce",
-  "version": "v0.0.1-b0.3-a3",
+  "version": "v0.0.1-b0.3-a5",
   "description": "",
   "main": "tsbuild/elecbuild.js",
   "scripts": {
@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
+    "@vitejs/plugin-vue": "^4.2.3",
     "cross-env": "^7.0.3",
     "crypto-js": "^4.1.1",
     "electron": "^25.4.0",
@@ -41,5 +42,8 @@
       "buildResources": "assets",
       "output": "dist_electron"
     }
+  },
+  "dependencies": {
+    "vue": "^3.3.4"
   }
 }
