@@ -1,0 +1,40 @@
+name: Build with Electron and Release
+on:
+  push:
+    branches: [ "vite" ]
+  pull_request:
+    branches: [ "vite" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Build
+        run: |
+          npm install
+          npm run electron:build
+          mv dist_electron/CForce-win.exe dist_electron/CForce-win10.exe
+          npm run electron:buildwin7
+          mv dist_electron/CForce-win.exe dist_electron/CForce-win7.exe
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "CForce v0.0.1-b0.?-a?"
+          files: |
+            dist_electron/CForce-win7.exe
+            dist_electron/CForce-win10.exe
+            dist_electron/CForce-mac.dmg
+            dist_electron/CForce-mac.zip
+            dist_electron/CForce-linux.snap
+            dist_electron/CForce-linux.AppImage
+    permissions:
+      contents: write
