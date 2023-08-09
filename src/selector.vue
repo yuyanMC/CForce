@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {setQueryString, sleep} from "./player/util";
 import {computed, getCurrentInstance, nextTick, onMounted, Ref, ref} from "vue";
+import {getStorage,setStorage} from "./player/storage";
 
 interface Song {
   id: string;
@@ -16,8 +17,29 @@ const clsList=computed(()=>({
 var instance=getCurrentInstance();
 const imgUrl=ref("");
 
+const alerting=ref(false);
+const alertContent=ref("");
+
+var meta:{CVer:number,CVerStr:string,CChangeLog:{ver:number,str:string,log:string}[]};
+
 onMounted(async () => {
   await import("./data/data.json").then(async (response) => songs = response.default);
+  await import("./data/meta.json").then(async (response) => meta = response.default);
+  let ver:number=getStorage("ver")||2;
+  if(ver!=meta["CVer"]) {
+    setStorage("ver", meta["CVer"]);
+    let tc = `CForce ${meta["CVerStr"]} 更新日志\n\n`;
+    meta.CChangeLog.forEach(e => {
+      if (e.ver >ver) {
+        tc+=e.str;
+        tc+="\n";
+        tc += e.log;
+        tc+="\n\n";
+      }
+    });
+    alerting.value=true;
+    alertContent.value=tc;
+  }
   nextTick(()=>{instance.proxy.$forceUpdate()});
   chosen.value = songs[0];
   imgUrl.value="url("+((await import(`./images/${chosen.value.id}.png`).catch(()=> {
@@ -57,6 +79,11 @@ async function uc() {
         <button @click="rd">
           开始
         </button>
+      </div>
+      <div id="alertBox" v-if="alerting" @click.self="alerting=false">
+        <div id="alert">
+          {{alertContent}}
+        </div>
       </div>
     </div>
   </div>
@@ -101,7 +128,7 @@ async function uc() {
   position: absolute;
   top:0;bottom:0; /* vertical center */
   left:0;right:0; /* horizontal center */
-  background-color: rgba(0,0,0,0.5);
+  background-color: #00000077;
   backdrop-filter: blur(5em);
 }
 #song_list,#operation{
@@ -162,5 +189,27 @@ async function uc() {
   box-sizing: border-box;
   margin: 0;
   padding:0;
+}
+#alertBox{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #00000077;
+}
+#alert{
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  left: 25%;
+  top:25%;
+  padding: 2.5%;
+  border: white 0.067em solid;
+  border-radius: 0.5em;
+  background-color: #000000bb;
+  font-size: 1.5em;
+  text-align: center;
+  overflow-y: scroll;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 </style>

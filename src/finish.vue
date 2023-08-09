@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="style/player.css">
 <script setup lang="ts">
 import {getQueryString, setQueryString} from "./player/util";
 import {onMounted, ref} from "vue";
@@ -180,7 +181,7 @@ function redirect(url:string){
   margin-left: 22%;
   margin-right: 22%;
   border: white 0.133em solid;
-  background-color: rgba(0,0,0,0.5);
+  background-color: #00000077;
   border-radius: 1em;
 }
 #operation>button{

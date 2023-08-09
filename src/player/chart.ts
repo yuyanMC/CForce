@@ -44,19 +44,16 @@ class Chart{
         let p: Path = new Path(0);
         switch (ep.type) {
             case "arc":
-                p = new ArcPath(ep.spd, ep.c![0], ep.c![1], ep.f![0], ep.f![1], ep.t![0], ep.t![1]);
+                p = new ArcPath(ep.spd, ep.c[0], ep.c[1], ep.f[0], ep.f[1], ep.t[0], ep.t[1]);
                 break;
             case "line":
-                p = new LinePath(ep.spd, ep.f![0], ep.f![1], ep.t![0], ep.t![1]);
+                p = new LinePath(ep.spd, ep.f[0], ep.f[1], ep.t[0], ep.t[1]);
                 break;
             case "static":
-                p = new StaticPath(ep.spd, ep.pos![0], ep.pos![1]);
+                p = new StaticPath(ep.spd, ep.pos[0], ep.pos[1]);
                 break;
             case "pow2":
-                p = new Pow2SPath(Chart.parsePath(ep.p!));
-                break;
-            case "rpow2":
-                p = new ReversePow2SPath(Chart.parsePath(ep.p!));
+                p = new Pow2SPath(Chart.parsePath(ep.p),ep.f,ep.t);
                 break;
             default:
                 throw Error("Invalid path type");
@@ -156,22 +153,16 @@ class SubscriberPath extends Path {
 }
 
 class Pow2SPath extends SubscriberPath {
-    constructor(_p: Path) {
+    f:number;
+    t:number
+    constructor(_p: Path,f:number=0,t:number=1) {
         super(_p);
+        this.f=f;
+        this.t=t;
     }
 
     cal(t: number): [number, number] {
-        return this.p.cal(t ** 2)
-    }
-}
-
-class ReversePow2SPath extends SubscriberPath {
-    constructor(_p: Path) {
-        super(_p);
-    }
-
-    cal(t: number): [number, number] {
-        return this.p.cal((1 - t) ** 2)
+        return this.p.cal((this.f+(this.t-this.f)*t) ** 2);
     }
 }
 
@@ -273,7 +264,7 @@ type JClackAnimationNote = {
     ho?:number;
     fill?: [number, number, number];
 }
-type JPath = JStaticPath|JLinePath|JArcPath|JPow2Path|JRPow2Path;
+type JPath = JStaticPath|JLinePath|JArcPath|JPow2Path;
 type JStaticPath = {
     type:"static";
     pos:[number,number];
@@ -295,10 +286,8 @@ type JArcPath = {
 type JPow2Path = {
     type:"pow2";
     p:JPath;
-}
-type JRPow2Path = {
-    type:"rpow2";
-    p:JPath;
+    f:number;
+    t:number;
 }
 export {Chart,Path,Note};
 export type {JChart};
