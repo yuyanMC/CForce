@@ -26,8 +26,8 @@ let backgroundMusic: HTMLAudioElement | null = null;
 */
 let hitSoundManager:SoundManager;
 let backgroundMusic:EnhancedAudioContext;
-let hitVolume:number = 0.2;
-let backgroundVolume:number = 0.1;
+let hitVolume:number = 0.5;
+let backgroundVolume:number = 0.5;
 let pointsGot = 0;
 let maxCombo = 0;
 let perfect = 0;
@@ -290,6 +290,8 @@ async function main() {
     ec.clear();
     renderText("点击屏幕开始", 1600, 900, "center", 200, new RGBAColor(230, 230, 230));
     await new Promise((resolve)=>{document.onclick=()=>{document.onclick=null;resolve(null);}});
+    ec.clear();
+    renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
     hitSoundManager=new SoundManager(hit);
     backgroundMusic=new EnhancedAudioContext(new AudioContext());
     await backgroundMusic.actx.suspend();
@@ -331,9 +333,9 @@ async function main() {
                 drawClackLine(element);
             });
             chart.notes.forEach(element => {
-                if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.5 / tps)) {
+                if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.01 / tps)) {
                     element.a = 1;
-                    element.aa = sec;
+                    element.aa = element.h;
                     bus.emit("hit", 1);
                 } else if ((sec - element.h) > 0.16 && !element.a) {
                     element.a = -1;
@@ -359,8 +361,8 @@ async function main() {
 }
 
 if(debug){
-    globalThis.cinject=(k:string,v:any)=>{
-        eval(`${k}=${v}`);
+    globalThis.cinject=(k:string)=>{
+        return eval(k);
     }
 }
 

@@ -1,6 +1,6 @@
 {
-  "CVer": 9,
-  "CVerStr": "v0.0.1-b0.3-a6",
+  "CVer": 10,
+  "CVerStr": "v0.0.1-b0.3-a7",
   "CChangeLog": [
     {
       "ver": 3,
@@ -36,6 +36,11 @@
       "ver": 9,
       "str": "v0.0.1-b0.3-a6",
       "log": "更新了新的谱面系统"
+    },
+    {
+      "ver": 10,
+      "str": "v0.0.1-b0.3-a7",
+      "log": "制谱器发布，请前往https://cforce.yuyanmc.top/maker.html体验（尚未完善）（本地客户端暂不支持）"
     }
   ]
 }

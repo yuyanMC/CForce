@@ -10,6 +10,11 @@
         "difficulty": 7
     },
     {
+        "id": "otherside",
+        "name": "Otherside - Minecraft",
+        "difficulty": 6
+    },
+    {
         "id":"demo",
         "name":"DEMO",
         "difficulty":1

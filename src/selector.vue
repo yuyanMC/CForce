@@ -84,6 +84,9 @@ async function uc() {
         <div id="alert">
           {{alertContent}}
         </div>
+        <div id="alertClose" @click.self="alerting=false">
+          X
+        </div>
       </div>
     </div>
   </div>
@@ -211,5 +214,15 @@ async function uc() {
   overflow-y: scroll;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+#alertClose{
+  position: sticky;
+  top:26%;
+  left:36.7%;
+  width: 1em;
+  font-size: 1.333em;
+  font-weight: bold;
+  z-index: 1;
+  font-family: Arial,serif;
 }
 </style>

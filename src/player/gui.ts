@@ -64,6 +64,9 @@ class ClackLineCanvasObject implements CanvasObject{
     }
 
     drawOnCtx(ctx: CanvasRenderingContext2D): void {
+        if(this.fp==this.tp){
+            return;
+        }
         if(this.tp<0||this.fp>1){
             return;
         }
