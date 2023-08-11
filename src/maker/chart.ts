@@ -2,7 +2,6 @@ import { calculateAngle } from '../player/util';
 class Chart{
     readonly notes:Note[];
     readonly animationNotes:Note[];
-    readonly notesTotal: number;
     readonly length: number;
     constructor(jChart:JChart) {
         this.notes=[];
@@ -35,7 +34,6 @@ class Chart{
             n.hi = element.hi;
             this.animationNotes.push(n);
         });
-        this.notesTotal = jChart.notes.length;
         this.length = jChart.length;
     }
 
@@ -166,24 +164,11 @@ class Pow2SPath extends SubscriberPath {
     }
 }
 
-class MultiPath extends Path {
+class MultiPath implements Path {
     ps: Array<Path>;
-    ssp: Array<number>;
 
     constructor(_ps: Array<Path>) {
-        let spdsum = 0;
-        _ps.forEach(element => {
-            spdsum += element.spd;
-        });
-        super(spdsum);
         this.ps = _ps;
-        this.ssp = [];
-        let nss = 0;
-        this.ssp.push(0);
-        _ps.forEach(element => {
-            nss += element.spd;
-            this.ssp.push(nss / spdsum);
-        });
     }
 
     cal(t: number): [number, number] {
@@ -194,6 +179,25 @@ class MultiPath extends Path {
             }
         }
         return this.ps[this.ps.length - 1].cal(1);
+    }
+
+    get ssp():Array<number>{
+        let sp = [];
+        let nss = 0;
+        sp.push(0);
+        this.ps.forEach(element => {
+            nss += element.spd;
+            sp.push(nss / this.spd);
+        });
+        return sp;
+    }
+
+    get spd():number{
+        let spdsum = 0;
+        this.ps.forEach(element => {
+            spdsum += element.spd;
+        });
+        return spdsum;
     }
 }
 
@@ -295,5 +299,8 @@ type JPow2Path = {
     f:number;
     t:number;
 }
-export {Chart,Path,Note};
+function nullPath(){
+    return new MultiPath([new StaticPath(0.0001,1600,900)]);
+}
+export {Chart,Path,Note,nullPath,MultiPath,StaticPath,LinePath,ArcPath,Pow2SPath};
 export type {JChart};

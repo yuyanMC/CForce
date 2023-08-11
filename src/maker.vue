@@ -3,10 +3,12 @@ import hit from "./sounds/hit.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './maker/gui';
 import {EventBus} from "./maker/event";
-import {Chart, JChart, Note} from "./maker/chart";
+import {ArcPath, Chart, JChart, LinePath, MultiPath, Note, nullPath, Path, Pow2SPath, StaticPath} from "./maker/chart";
 import {DynamicLoader} from "./maker/network";
 import {EnhancedAudioContext, SoundManager} from "./maker/sound";
 import {computed, onMounted, Ref, ref} from "vue";
+
+const bar=ref("N");
 
 let imageLoader:DynamicLoader=new DynamicLoader("images");
 let soundLoader:DynamicLoader=new DynamicLoader("sounds");
@@ -18,13 +20,31 @@ let backgroundMusic:EnhancedAudioContext=new EnhancedAudioContext(new AudioConte
 let hitVolume:number = 0.5;
 let backgroundVolume:number = 0.5;
 let perfect = 0;
-let paused = false;
+const _p=ref(false);
+const paused = computed({
+  get:()=> {
+    return _p.value;
+  },
+  set:(n)=>{
+    if(n==_p.value){
+      return;
+    }
+    if(n){
+      backgroundMusic.pause();
+      _p.value=true;
+    }else{
+      backgroundMusic.play(sec.value);
+      _p.value=false;
+    }
+  }
+});
 let tickTimes: number[] = [];
 let debug = true;
 const startTime=ref(0);
 const sec=ref(0);
 let pausedTime = 0;
 let ec: EnhancedContent;
+let sh=100000;
 let bus = new EventBus<{
   hit: number,
   miss: null,
@@ -36,6 +56,7 @@ const music=ref(null);
 const bg=ref(null);
 const gamebox=ref(null);
 const canvasbox=ref(null);
+const sel=ref("none");
 function renderText(text: string, x: number, y: number, align: CanvasTextAlign = "left", fontSize: number = 50, fill: RGBAColor | number = new RGBAColor(255, 255, 255)) {
   ec.render(new TextCanvasObject(text, x, y, align, fontSize, fill instanceof RGBAColor ? fill : new RGBAColor(255, 255, 255, fill)));
 }
@@ -94,7 +115,7 @@ function drawTexts() {
   ctx.textAlign = "center";
   renderText(`${perfect}`, 1600, 60, "center");
   renderText(`COMBO`, 1600, 120, "center");
-  renderText(`Point: ${(perfect / chart.value.notesTotal * 100000).toFixed(0)}`, 3150, 60, "right");
+  renderText(`Point: ${(perfect / chart.value.notes.length * 100000).toFixed(0)}`, 3150, 60, "right");
   renderText(`Music: ${(sec.value / chart.value.length * 100).toFixed(2)}%`, 3150, 120, "right");
   if (debug) {
     let trueTps = tickTimes.length;
@@ -155,9 +176,6 @@ onMounted(async()=>{
     startTime.value = Date.now() - backgroundMusic.actx.currentTime * 1000;
   });
   ec.clear();
-  renderText("点击屏幕开始", 1600, 900, "center", 200, new RGBAColor(230, 230, 230));
-  await new Promise((resolve)=>{document.getElementById("main_canvas").onclick=()=>{document.getElementById("main_canvas").onclick=null;resolve(null);}});
-  ec.clear();
   renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
   hitSoundManager=new SoundManager(hit);
   await backgroundMusic.actx.suspend();
@@ -167,7 +185,7 @@ onMounted(async()=>{
   hitSoundManager.setVolume(hitVolume);
   bus.on("start", () => {
     setInterval(async function () {
-      if (paused) {
+      if (paused.value) {
         pausedTime = (Date.now() - startTime.value) / 1000 - sec.value;
         return;
       }
@@ -247,7 +265,14 @@ Object.defineProperty(window,"cchart",{
 const csec=computed({
   get:()=>sec.value,
   set:(n)=>{
-    chart.value=new Chart(song.value);
+    chart.value.notes.forEach(e=>{
+      e.a=0;
+      e.aa=0;
+    });
+    chart.value.animationNotes.forEach(e=>{
+      e.a=0;
+      e.aa=0;
+    });
     perfect=0;
     chart.value.notes.forEach(e=>{
       if(e.h<n) {
@@ -283,7 +308,7 @@ const cchart=computed({
       console.error(e);
     }
     if (m.bgsound != song.value.bgsound) {
-      paused=true;
+      paused.value=true;
       ec.clear();
       renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
       await backgroundMusic.load(await soundLoader.loadAsUrl(m.bgsound));
@@ -303,6 +328,77 @@ function changeBackgroundMusic(){
   console.log(url);
   backgroundMusic.load(url);
 }
+function cColor(e:Event,n:Note){
+  let c=(e.target as HTMLInputElement).value;
+  n.f=[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];
+}
+function showSel(s:string){
+  if(s=="none"){
+    return "<<CURRENTLY NONE>>";
+  }
+  if(s.startsWith("N")){
+    return `Note ${parseInt(s.slice(1))+1}`;
+  }
+  if(s.startsWith("AN")){
+    return `Animation Note ${parseInt(s.slice(2))+1}`;
+  }
+}
+function getNote(s:string):Note{
+  if(s=="none"){
+    return null;
+  }
+  if(s.startsWith("N")){
+    return chart.value.notes[parseInt(s.slice(1))] as Note;
+  }
+  if(s.startsWith("AN")){
+    return chart.value.animationNotes[parseInt(s.slice(2))] as Note;
+  }
+}
+function getType(p:Path){
+  if(p instanceof StaticPath){
+    return "static";
+  }
+  if(p instanceof LinePath){
+    return "line";
+  }
+  if(p instanceof ArcPath){
+    return "arc";
+  }
+  if(p instanceof Pow2SPath){
+    return "pow2";
+  }
+  throw new Error("Invalid Path");
+}
+function changePathType(p:number,e:Event){
+  let type=(e.target as HTMLSelectElement).value;
+  let spd=(getNote(sel.value).p as MultiPath).ps[p].spd;
+  let path:Path=new StaticPath(spd,1600,900);
+  if(type=="static"){
+    path=new StaticPath(spd,1600,900);
+  }
+  if(type=="line"){
+    path=new LinePath(spd,0,0,1600,900);
+  }
+  if(type=="arc"){
+    path=new ArcPath(spd,0,0,-1600,900,1600,900);
+  }
+  if(type=="pow2"){
+    path=new Pow2SPath(new StaticPath(spd,1600,900));
+  }
+  (getNote(sel.value).p as MultiPath).ps[p]=path;
+}
+function previewPath(){
+  sh=getNote(sel.value).h;
+  let s=getNote(sel.value).p.spd;
+  paused.value=false;
+  csec.value=s;
+}
+bus.on("tick",(e)=>{
+  if(e>sh){
+    paused.value=true;
+    sh=100000;
+  }
+});
 </script>
 
 <template>
@@ -311,20 +407,59 @@ function changeBackgroundMusic(){
       <div id="canvas_box" ref="canvasbox">
         <canvas id="main_canvas" width="3200" height="1800"></canvas>
       </div>
-      <ul id="notes">
-        <li v-for="(note,index) of chart.notes">
+      <ul id="notes" v-if="bar=='N'">
+        <li v-for="(note,index) of chart.notes" :class="{selected:sel==`N${index}`}" @click="sel=`N${index}`">
           <svg class="showNote">
             <circle r="2.2em" cx="2.5em" cy="2.5em" :fill="`rgb(${note.f[0]},${note.f[1]},${note.f[2]})`" stroke-width="0"></circle>
             <circle r="2em" cx="2.5em" cy="2.5em" fill="#00000000" stroke="white" stroke-width="0.05em"></circle>
           </svg>
-          <span class="noteTag">Note #{{index}}</span>
+          <span class="noteTag">Note #{{index+1}}</span>
           <span class="noteTrack">Track</span>
           <select class="noteTrackInput" v-model="note.t">
             <option value="A">A</option>
             <option value="B">B</option>
           </select>
           <span class="noteHitTime">Hit Time</span>
-          <input class="noteHitTimeInput" v-model="note.h" type="number"/>
+          <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
+          <span class="noteDelete" @click="chart.notes.splice(index,1)">X</span>
+        </li>
+        <li id="add" @click="chart.notes.push(new Note(nullPath(),0,'A','I',0))">
+          +
+        </li>
+      </ul>
+      <ul id="notes" v-if="bar=='AN'">
+        <li v-for="(note,index) of chart.animationNotes" :class="{selected:sel==`AN${index}`}" @click="sel=`AN${index}`">
+          <svg class="showNote">
+            <circle r="2.2em" cx="2.5em" cy="2.5em" :fill="`rgb(${note.f[0]},${note.f[1]},${note.f[2]})`" stroke-width="0"></circle>
+            <circle r="2em" cx="2.5em" cy="2.5em" fill="#00000000" stroke="white" stroke-width="0.05em"></circle>
+          </svg>
+          <span class="noteTag">Animation Note #{{index+1}}</span>
+          <span class="noteTrack">Fill</span>
+          <input class="noteFillInput" type="color" :value="`#${note.f[0].toString(16)}${note.f[1].toString(16)}${note.f[2].toString(16)}`" @change="e=>{cColor(e,note as Note)}"/>
+          <span class="noteHitTime">Hit Time</span>
+          <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
+          <span class="noteDelete" @click="chart.animationNotes.splice(index,1)">X</span>
+        </li>
+        <li id="add" @click="chart.animationNotes.push(new Note(nullPath(),0,'M','I',0,[64,64,64]))">
+          +
+        </li>
+      </ul>
+      <ul id="notes" v-if="bar=='PE'">
+        <li v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
+          <span class="noteTag">Path #{{index+1}}</span>
+          <span class="noteTrack">Type</span>
+          <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
+            <option value="static">Static</option>
+            <option value="line">Line</option>
+            <option value="arc">Arc</option>
+            <option value="pow2">^2</option>
+          </select>
+          <span class="noteHitTime">Length</span>
+          <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+          <span class="noteDelete" @click="chart.animationNotes.splice(index,1)">X</span>
+        </li>
+        <li id="add" @click="(getNote(sel).p as MultiPath).ps.push(new StaticPath(0.0001,1600,900))">
+          +
         </li>
       </ul>
       <div id="dataBox">
@@ -333,6 +468,15 @@ function changeBackgroundMusic(){
         <span>Chart: </span><input v-model="cchart"/><br/>
         <span>Upload Music: </span><input type="file" accept="audio/*" ref="music" @change="changeBackgroundMusic"/><br/>
         <span>Upload Background: </span><input type="file" accept="image/*" ref="bg" @change="changeBackground"/><br/>
+        <span>Bar: </span>
+        <select v-model.lazy="bar">
+          <option value="N">Notes</option>
+          <option value="AN">Animation Notes</option>
+          <option value="PE">Path Editor</option>
+        </select>
+        <br/>
+        <span>Current: {{showSel(sel)}}</span><br/>
+        <button v-if="bar=='PE'" @click="previewPath">Preview</button><br/>
       </div>
     </div>
   </div>
@@ -399,8 +543,11 @@ function changeBackgroundMusic(){
   height: 40%;
 }
 input{
-  height:2em;
+  font-size: 1em;
   width:20em;
+}
+select{
+  font-size: 1em;
 }
 #pause{
   width: 1em;
@@ -409,6 +556,7 @@ input{
 *{
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 #notes{
   color:white;
@@ -420,6 +568,13 @@ input{
   width: 100%;
   height: 5em;
   border: white 0.1em solid;
+}
+#add{
+  background-color: #808080;
+  font-size: 5em;
+  height: 1em !important;
+  border: white 0.02em solid !important;
+  text-align: center;
 }
 .showNote{
   position: absolute;
@@ -446,6 +601,13 @@ input{
   height: 1.25em;
   width: 2em;
 }
+.noteFillInput{
+  position: absolute;
+  left: 9em;
+  top:1em;
+  height: 1em;
+  width: 2em;
+}
 .noteHitTime{
   position: absolute;
   left: 5em;
@@ -459,7 +621,23 @@ input{
   height: 1.25em;
   width: 10em;
 }
+.noteDelete{
+  position: absolute;
+  right:1em;
+  top:0;
+}
+.pathTrackInput{
+  position: absolute;
+  font-size: 1em;
+  left: 9em;
+  top:1em;
+  height: 1.25em;
+  width: 10em;
+}
 ul{
   list-style-type: none;
+}
+.selected{
+  background-color: #404040;
 }
 </style>

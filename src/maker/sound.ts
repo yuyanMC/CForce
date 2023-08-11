@@ -20,7 +20,6 @@ class EnhancedAudioContext{
         gainNode.gain.value = this.volume
         gainNode.connect(this.actx.destination)
         console.log(`[sound.ts/EnhancedAudioContext] Audio '${this.url}' played.`);
-        console.debug(this.source,gainNode,this.actx,this.audioBuffer);
     }
     pause(){
         try {
@@ -40,7 +39,7 @@ class EnhancedAudioContext{
     async load(url:string) {
         this.url=url;
         this.pause();
-        return fetch(url).then(e=>e.arrayBuffer()).then(e=>this.init(e)).then(e=>console.log(`[sound.ts/EnhancedAudioContext] Audio '${url}' loaded.`));
+        return fetch(url).then(e=>e.arrayBuffer()).then(e=>this.init(e)).then(()=>console.log(`[sound.ts/EnhancedAudioContext] Audio '${url}' loaded.`));
     }
     setVolume(volume:number){
         this.volume=volume;
