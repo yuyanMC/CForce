@@ -299,8 +299,5 @@ type JPow2Path = {
     f:number;
     t:number;
 }
-function nullPath(){
-    return new MultiPath([new StaticPath(0.0001,1600,900)]);
-}
-export {Chart,Path,Note,nullPath,MultiPath,StaticPath,LinePath,ArcPath,Pow2SPath};
+export {Chart,Path,Note,MultiPath,StaticPath,LinePath,ArcPath,Pow2SPath};
 export type {JChart};

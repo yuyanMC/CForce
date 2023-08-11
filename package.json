@@ -8,7 +8,7 @@
     "electron:dev": "npm run build && electron .",
     "electron:build": "npm run build && electron-builder -mwl",
     "electron:buildwin7": "npm i -D electron@22.3.18 && electron-builder -w",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

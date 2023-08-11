@@ -3,7 +3,7 @@ import hit from "./sounds/hit.mp3";
 
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './maker/gui';
 import {EventBus} from "./maker/event";
-import {ArcPath, Chart, JChart, LinePath, MultiPath, Note, nullPath, Path, Pow2SPath, StaticPath} from "./maker/chart";
+import {ArcPath, Chart, JChart, LinePath, MultiPath, Note, Path, Pow2SPath, StaticPath} from "./maker/chart";
 import {DynamicLoader} from "./maker/network";
 import {EnhancedAudioContext, SoundManager} from "./maker/sound";
 import {computed, onMounted, Ref, ref} from "vue";
@@ -399,6 +399,17 @@ bus.on("tick",(e)=>{
     sh=100000;
   }
 });
+function pushNote(){
+  chart.value.notes.push(new Note(new MultiPath([new StaticPath(0.0001,1600,900)]),0,'A','I',0));
+}
+function pushANote(){
+  chart.value.animationNotes.push(new Note(new MultiPath([new StaticPath(0.0001,1600,900)]),0,'M','I',0,[64,64,64]));
+}
+function pushPath(){
+  (getNote(sel.value).p as MultiPath).ps.push(new StaticPath(0.0001,1600,900));
+}
+
+
 </script>
 
 <template>
@@ -423,7 +434,7 @@ bus.on("tick",(e)=>{
           <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
           <span class="noteDelete" @click="chart.notes.splice(index,1)">X</span>
         </li>
-        <li id="add" @click="chart.notes.push(new Note(nullPath(),0,'A','I',0))">
+        <li id="add" @click="pushNote">
           +
         </li>
       </ul>
@@ -440,7 +451,7 @@ bus.on("tick",(e)=>{
           <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
           <span class="noteDelete" @click="chart.animationNotes.splice(index,1)">X</span>
         </li>
-        <li id="add" @click="chart.animationNotes.push(new Note(nullPath(),0,'M','I',0,[64,64,64]))">
+        <li id="add" @click="pushANote">
           +
         </li>
       </ul>
@@ -458,7 +469,7 @@ bus.on("tick",(e)=>{
           <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
           <span class="noteDelete" @click="chart.animationNotes.splice(index,1)">X</span>
         </li>
-        <li id="add" @click="(getNote(sel).p as MultiPath).ps.push(new StaticPath(0.0001,1600,900))">
+        <li id="add" @click="pushPath">
           +
         </li>
       </ul>
