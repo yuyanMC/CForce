@@ -1,4 +1,5 @@
 type Handler<T = any> = (val: T) => void;
+
 class EventBus<Events extends Record<string, any>> {
     private map: Map<string, Set<Handler>> = new Map();
 
@@ -28,5 +29,6 @@ class EventBus<Events extends Record<string, any>> {
         copied.forEach((fn) => fn(value));
     }
 }
+
 export {EventBus};
 export type {Handler};

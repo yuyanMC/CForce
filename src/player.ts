@@ -5,15 +5,15 @@ import blank from "./sounds/blank.mp3";
 import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, TextCanvasObject} from './player/gui';
 import {EventBus} from "./player/event";
 import {Chart, JChart, Note} from "./player/chart";
-import {getQueryString,setQueryString} from "./player/util";
+import {getQueryString, setQueryString} from "./player/util";
 import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/network";
 import {EnhancedAudioContext, SoundManager} from "./player/sound";
-import {KeyListener,registerKeyListener} from "./player/keyboard";
+import {KeyListener, registerKeyListener} from "./player/keyboard";
 
-let imageLoader:DynamicLoader=new DynamicLoader("images");
-let soundLoader:DynamicLoader=new DynamicLoader("sounds");
-let chartLoader:DynamicJsonLoader=new DynamicJsonLoader("charts");
-let scriptLoader:DynamicScriptLoader=new DynamicScriptLoader("scripts");
+let imageLoader: DynamicLoader = new DynamicLoader("images");
+let soundLoader: DynamicLoader = new DynamicLoader("sounds");
+let chartLoader: DynamicJsonLoader = new DynamicJsonLoader("charts");
+let scriptLoader: DynamicScriptLoader = new DynamicScriptLoader("scripts");
 let ctx: CanvasRenderingContext2D;
 let chart: Chart;
 let tps: number = 60;
@@ -24,20 +24,20 @@ let hitSounds: Array<HTMLAudioElement> | null = null;
 let hitSoundManager: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 let backgroundMusic: HTMLAudioElement | null = null;
 */
-let hitSoundManager:SoundManager;
-let backgroundMusic:EnhancedAudioContext;
-let hitVolume:number = 0.5;
-let backgroundVolume:number = 0.5;
+let hitSoundManager: SoundManager;
+let backgroundMusic: EnhancedAudioContext;
+let hitVolume: number = 0.5;
+let backgroundVolume: number = 0.5;
 let pointsGot = 0;
 let maxCombo = 0;
 let perfect = 0;
 let good = 0;
-let bad=0;
+let bad = 0;
 let paused = false;
 let tickTimes: number[] = [];
 let debug = true;
-let startTime:number;
-let sec :number;
+let startTime: number;
+let sec: number;
 let pausedTime = 0;
 let ec: EnhancedContent;
 let bus = new EventBus<{
@@ -52,14 +52,14 @@ function renderText(text: string, x: number, y: number, align: CanvasTextAlign =
 }
 
 function drawNote(note: Note) {
-    if(note.a){
+    if (note.a) {
         return;
     }
     if ((sec - note.h + note.p.spd) / note.p.spd < 0 || (sec - note.h + note.p.spd) / note.p.spd > 1) {
         return;
     }
     let np = note.p.cal((sec - note.h + note.p.spd) / note.p.spd);
-    let c: RGBAColor= new RGBAColor(note.f[0], note.f[1], note.f[2]);
+    let c: RGBAColor = new RGBAColor(note.f[0], note.f[1], note.f[2]);
     ec.render(new NoteCanvasObject(...np, c));
 }
 
@@ -74,11 +74,11 @@ function drawClackLine(note: Note) {
 }
 
 function drawA(note: Note) {
-    if(note.a<=0){
+    if (note.a <= 0) {
         return;
     }
     let ad = sec - note.aa;
-    let np = note.p.cal((note.aa-note.h+note.p.spd) / note.p.spd);
+    let np = note.p.cal((note.aa - note.h + note.p.spd) / note.p.spd);
     if (note.a == 12 && ad < note.hi!) {
         let rc = ad / note.hi! + 1;
         let c = new RGBAColor(note.f[0], note.f[1], note.f[2], rc - 1);
@@ -142,14 +142,16 @@ function nextFrame() {
 
 async function main() {
     let id = getQueryString("id");
-    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await imageLoader.loadAsUrl(`${id}.png`).catch(() => {return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="}))})`;
+    document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await imageLoader.loadAsUrl(`${id}.png`).catch(() => {
+        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="
+    }))})`;
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
     ec.setBackGroundColor("rgba(0,0,0,0.5)");
     ec.clear();
     renderText("游戏正在加载", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
-    bus.on("hit", (e)=> {
+    bus.on("hit", (e) => {
         combo++;
         maxCombo = Math.max(combo, maxCombo);
         if (e == 1) {
@@ -160,7 +162,7 @@ async function main() {
             good += 1;
         }
     });
-    bus.on("hit", ()=> {
+    bus.on("hit", () => {
         hitSoundManager.play();
     });
     bus.on("miss", () => {
@@ -176,9 +178,9 @@ async function main() {
     bus.on("start", () => {
         startTime = Date.now() - backgroundMusic.actx.currentTime * 1000;
     });
-    let trackAKeyListener=new KeyListener("a");
-    trackAKeyListener.onPress=()=>{
-        let fetched=false;
+    let trackAKeyListener = new KeyListener("a");
+    trackAKeyListener.onPress = () => {
+        let fetched = false;
         chart.notes.forEach((element) => {
             if (fetched) {
                 return;
@@ -196,16 +198,16 @@ async function main() {
                 element.a = 2;
                 element.aa = sec;
                 bus.emit("hit", 2);
-            }else if(Math.abs(element.h - sec) <= 0.32){
-                element.a=11;
-                element.aa=sec;
-                element.ho=0.25;
+            } else if (Math.abs(element.h - sec) <= 0.32) {
+                element.a = 11;
+                element.aa = sec;
+                element.ho = 0.25;
                 bad++;
-                bus.emit("miss",null);
+                bus.emit("miss", null);
             }
         });
     };
-    trackAKeyListener.onRelease=()=>{
+    trackAKeyListener.onRelease = () => {
         chart.notes.forEach((element) => {
             if (element.a <= 0 || element.t != "A" || element.y != "A") {
                 return;
@@ -224,9 +226,9 @@ async function main() {
         });
     };
     registerKeyListener(trackAKeyListener);
-    let trackBKeyListener=new KeyListener("l");
-    trackBKeyListener.onPress=()=>{
-        let fetched=false;
+    let trackBKeyListener = new KeyListener("l");
+    trackBKeyListener.onPress = () => {
+        let fetched = false;
         chart.notes.forEach((element) => {
             if (fetched) {
                 return;
@@ -244,16 +246,16 @@ async function main() {
                 element.a = 2;
                 element.aa = sec;
                 bus.emit("hit", 2);
-            }else if(Math.abs(element.h - sec) <= 0.32){
-                element.a=11;
-                element.aa=sec;
-                element.ho=0.25;
+            } else if (Math.abs(element.h - sec) <= 0.32) {
+                element.a = 11;
+                element.aa = sec;
+                element.ho = 0.25;
                 bad++;
-                bus.emit("miss",null);
+                bus.emit("miss", null);
             }
         });
     };
-    trackAKeyListener.onRelease=()=>{
+    trackAKeyListener.onRelease = () => {
         chart.notes.forEach((element) => {
             if (element.a <= 0 || element.t != "B" || element.y != "A") {
                 return;
@@ -277,7 +279,7 @@ async function main() {
         renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("No data file given.");
     }
-    let song:JChart;
+    let song: JChart;
     await chartLoader.loadAsJson(`${id}.json`).then(async (response) => song = response.default);
     if (song == undefined) {
         ec.clear();
@@ -289,11 +291,16 @@ async function main() {
     }
     ec.clear();
     renderText("点击屏幕开始", 1600, 900, "center", 200, new RGBAColor(230, 230, 230));
-    await new Promise((resolve)=>{document.onclick=()=>{document.onclick=null;resolve(null);}});
+    await new Promise((resolve) => {
+        document.onclick = () => {
+            document.onclick = null;
+            resolve(null);
+        }
+    });
     ec.clear();
     renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
-    hitSoundManager=new SoundManager(hit);
-    backgroundMusic=new EnhancedAudioContext(new AudioContext());
+    hitSoundManager = new SoundManager(hit);
+    backgroundMusic = new EnhancedAudioContext(new AudioContext());
     await backgroundMusic.actx.suspend();
     await hitSoundManager.load();
     if (song.bgsound) {
@@ -303,7 +310,7 @@ async function main() {
     }
     backgroundMusic.setVolume(backgroundVolume);
     hitSoundManager.setVolume(hitVolume);
-    chart=new Chart(song);
+    chart = new Chart(song);
     bus.on("start", () => {
         let mainTimer = setInterval(async function () {
             if (paused) {
@@ -350,18 +357,18 @@ async function main() {
             if (sec >= song!.length) {
                 clearInterval(mainTimer);
                 paused = true;
-                location.replace(`./finish.html${setQueryString({i:id,c:maxCombo,t:(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0),p:perfect,g:good,b:bad,m:chart.notesTotal - perfect - good})}`);
+                location.replace(`./finish.html${setQueryString({i: id, c: maxCombo, t: (pointsGot / chart.notesTotal / 100 * 100000).toFixed(0), p: perfect, g: good, b: bad, m: chart.notesTotal - perfect - good})}`);
             }
         }, 1000 / tps);
     });
     ec.clear();
     await backgroundMusic.actx.resume();
     backgroundMusic.play();
-    bus.emit("start",null);
+    bus.emit("start", null);
 }
 
-if(debug){
-    globalThis.cinject=(k:string)=>{
+if (debug) {
+    globalThis.cinject = (k: string) => {
         return eval(k);
     }
 }

@@ -1,4 +1,4 @@
-import {bus,renderText} from "../player";
+import {bus, renderText} from "../player";
 
 bus.on("tick", t => {
     if (t >= 0 && t <= 5) {

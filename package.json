@@ -16,10 +16,10 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "cross-env": "^7.0.3",
     "crypto-js": "^4.1.1",
-    "electron": "^25.4.0",
+    "electron": "^25.5.0",
     "electron-builder": "^24.6.3",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "typescript": "^5.1.6",
+    "vite": "^4.4.9"
   },
   "keywords": [],
   "author": "",

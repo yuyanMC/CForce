@@ -1,7 +1,7 @@
 {
-    "notes":[],
-    "animationNotes":[],
-    "bgsound":false,
-    "length":3600,
-    "script":"timer.ts"
+  "notes": [],
+  "animationNotes": [],
+  "bgsound": false,
+  "length": 3600,
+  "script": "timer.ts"
 }

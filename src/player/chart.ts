@@ -1,12 +1,14 @@
-import { calculateAngle } from './util';
-class Chart{
-    readonly notes:Note[];
-    readonly animationNotes:Note[];
+import {calculateAngle} from './util';
+
+class Chart {
+    readonly notes: Note[];
+    readonly animationNotes: Note[];
     readonly notesTotal: number;
     readonly length: number;
-    constructor(jChart:JChart) {
-        this.notes=[];
-        this.animationNotes=[];
+
+    constructor(jChart: JChart) {
+        this.notes = [];
+        this.animationNotes = [];
         jChart.notes.forEach(element => {
             let ps: Array<Path> = [];
             element.paths.forEach(pe => {
@@ -14,9 +16,9 @@ class Chart{
             });
             let p: Path = new MultiPath(ps);
             if (element.type !== "I") {
-                this.notes.push(new Note(p, element.h, element.track, element.type, element.al,element.track=="A"?[0, 220, 240]:[220, 70, 20]));
-            }else{
-                this.notes.push(new Note(p, element.h, element.track, element.type,0,element.track=="A"?[0, 220, 240]:[220, 70, 20]));
+                this.notes.push(new Note(p, element.h, element.track, element.type, element.al, element.track == "A" ? [0, 220, 240] : [220, 70, 20]));
+            } else {
+                this.notes.push(new Note(p, element.h, element.track, element.type, 0, element.track == "A" ? [0, 220, 240] : [220, 70, 20]));
             }
         });
         jChart.animationNotes.forEach(element => {
@@ -25,10 +27,10 @@ class Chart{
                 ps.push(Chart.parsePath(pe));
             });
             let p: Path = new MultiPath(ps);
-            let n:Note;
+            let n: Note;
             if (element.type !== "I") {
                 n = new Note(p, element.h, "M", element.type, element.al, element.fill);
-            }else{
+            } else {
                 n = new Note(p, element.h, "M", element.type, undefined, element.fill);
             }
             n.ho = element.ho;
@@ -53,7 +55,7 @@ class Chart{
                 p = new StaticPath(ep.spd, ep.pos[0], ep.pos[1]);
                 break;
             case "pow2":
-                p = new Pow2SPath(Chart.parsePath(ep.p),ep.f,ep.t);
+                p = new Pow2SPath(Chart.parsePath(ep.p), ep.f, ep.t);
                 break;
             default:
                 throw Error("Invalid path type");
@@ -61,6 +63,7 @@ class Chart{
         return p;
     }
 }
+
 class Path {
     spd: number;
 
@@ -153,16 +156,17 @@ class SubscriberPath extends Path {
 }
 
 class Pow2SPath extends SubscriberPath {
-    f:number;
-    t:number
-    constructor(_p: Path,f:number=0,t:number=1) {
+    f: number;
+    t: number
+
+    constructor(_p: Path, f: number = 0, t: number = 1) {
         super(_p);
-        this.f=f;
-        this.t=t;
+        this.f = f;
+        this.t = t;
     }
 
     cal(t: number): [number, number] {
-        return this.p.cal((this.f+(this.t-this.f)*t) ** 2);
+        return this.p.cal((this.f + (this.t - this.f) * t) ** 2);
     }
 }
 
@@ -223,71 +227,72 @@ class Note {
         this.f = _f ? _f : [64, 64, 64];
     }
 }
+
 type JChart = {
-    notes:JNote[];
-    animationNotes:JAnimationNote[];
-    bgsound?:string;
-    length:number;
-    script?:string;
+    notes: JNote[];
+    animationNotes: JAnimationNote[];
+    bgsound?: string;
+    length: number;
+    script?: string;
 }
-type JNote = JClickNote|JClackNote;
+type JNote = JClickNote | JClackNote;
 type JClickNote = {
-    track:"A"|"B";
-    type:"I";
-    paths:JPath[];
-    h:number;
+    track: "A" | "B";
+    type: "I";
+    paths: JPath[];
+    h: number;
 }
 type JClackNote = {
-    track:"A"|"B";
-    type:"A";
-    paths:JPath[];
-    h:number;
-    al:number;
+    track: "A" | "B";
+    type: "A";
+    paths: JPath[];
+    h: number;
+    al: number;
 }
-type JAnimationNote = JClickAnimationNote|JClackAnimationNote;
+type JAnimationNote = JClickAnimationNote | JClackAnimationNote;
 type JClickAnimationNote = {
-    track:"A"|"B";
-    type:"I";
-    paths:JPath[];
-    h:number;
-    hi?:number;
-    ho?:number;
+    track: "A" | "B";
+    type: "I";
+    paths: JPath[];
+    h: number;
+    hi?: number;
+    ho?: number;
     fill?: [number, number, number];
 }
 type JClackAnimationNote = {
-    track:"A"|"B";
-    type:"A";
-    paths:JPath[];
-    h:number;
-    al:number;
-    hi?:number;
-    ho?:number;
+    track: "A" | "B";
+    type: "A";
+    paths: JPath[];
+    h: number;
+    al: number;
+    hi?: number;
+    ho?: number;
     fill?: [number, number, number];
 }
-type JPath = JStaticPath|JLinePath|JArcPath|JPow2Path;
+type JPath = JStaticPath | JLinePath | JArcPath | JPow2Path;
 type JStaticPath = {
-    type:"static";
-    pos:[number,number];
-    spd:number;
+    type: "static";
+    pos: [number, number];
+    spd: number;
 }
 type JLinePath = {
-    type:"line";
-    f:[number,number];
-    t:[number,number];
-    spd:number;
+    type: "line";
+    f: [number, number];
+    t: [number, number];
+    spd: number;
 }
 type JArcPath = {
-    type:"arc";
-    c:[number,number];
-    f:[number,number];
-    t:[number,number];
-    spd:number;
+    type: "arc";
+    c: [number, number];
+    f: [number, number];
+    t: [number, number];
+    spd: number;
 }
 type JPow2Path = {
-    type:"pow2";
-    p:JPath;
-    f:number;
-    t:number;
+    type: "pow2";
+    p: JPath;
+    f: number;
+    t: number;
 }
-export {Chart,Path,Note};
+export {Chart, Path, Note};
 export type {JChart};

@@ -1,34 +1,42 @@
-body{
+body {
     height: 100%;
     color: white;
     font-family: 'Courier New', Courier, monospace;
     font-size: calc(0.025 * min(100vw, 56.25vw, 100vh, 177.78vh));
 }
-#main_canvas{
+
+#main_canvas {
     width: 100%;
     height: 100%;
     position: absolute;
-    top:0;bottom:0; /* vertical center */
-    left:0;right:0; /* horizontal center */
+    top: 0;
+    bottom: 0; /* vertical center */
+    left: 0;
+    right: 0; /* horizontal center */
     backdrop-filter: blur(5em);
 }
-#canvas_box{
+
+#canvas_box {
     width: 100vw;
     height: 56.25vw; /* height:width ratio = 9/16 = .5625  */
     max-height: 100vh;
     max-width: 177.78vh; /* 16/9 = 1.778 */
     margin: auto;
     position: absolute;
-    top:0;bottom:0; /* vertical center */
-    left:0;right:0; /* horizontal center */
+    top: 0;
+    bottom: 0; /* vertical center */
+    left: 0;
+    right: 0; /* horizontal center */
     background-repeat: no-repeat;
     background-size: contain;
     background-origin: content-box;
 }
-html,body{
-    overflow:hidden;
+
+html, body {
+    overflow: hidden;
 }
-*{
+
+* {
     margin: 0;
     padding: 0;
 }
