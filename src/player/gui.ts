@@ -102,7 +102,7 @@ class TextCanvasObject implements CanvasObject {
     private fontSize: number;
     private fill: RGBAColor;
 
-    public constructor(text: string, x: number, y: number, align: CanvasTextAlign = "left", fontSize: number = 50, fill: RGBAColor = new RGBAColor(255, 255, 255)) {
+    public constructor(text: string, x: number, y: number, align: CanvasTextAlign = "center", fontSize: number = 50, fill: RGBAColor = new RGBAColor(255, 255, 255)) {
         this.text = text;
         this.x = x;
         this.y = y;

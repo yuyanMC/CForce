@@ -9,37 +9,56 @@ import {getQueryString, setQueryString} from "./player/util";
 import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/network";
 import {EnhancedAudioContext, SoundManager} from "./player/sound";
 import {KeyListener, registerKeyListener} from "./player/keyboard";
+import {
+    loadingStr,
+    loadDownloadStr,
+    loadErrorStr,
+    loadWaitClickStr,
+    blankImage,
+    fadeInAnim,
+    fadeOutAnim, perfectAnim, goodAnim, font, background
+} from "./player/const";
 
+// Resource loaders
 let imageLoader: DynamicLoader = new DynamicLoader("images");
 let soundLoader: DynamicLoader = new DynamicLoader("sounds");
 let chartLoader: DynamicJsonLoader = new DynamicJsonLoader("charts");
 let scriptLoader: DynamicScriptLoader = new DynamicScriptLoader("scripts");
+
+// Render control
 let ctx: CanvasRenderingContext2D;
+
+// Game data
 let chart: Chart;
-let tps: number = 60;
-let autoPlay: boolean = false;
-let combo: number = 0;
-/*
-let hitSounds: Array<HTMLAudioElement> | null = null;
-let hitSoundManager: Array<number> = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-let backgroundMusic: HTMLAudioElement | null = null;
-*/
-let hitSoundManager: SoundManager;
-let backgroundMusic: EnhancedAudioContext;
-let hitVolume: number = 0.5;
-let backgroundVolume: number = 0.5;
+
+// - Point
 let pointsGot = 0;
 let maxCombo = 0;
 let perfect = 0;
 let good = 0;
 let bad = 0;
+
+// Tick controllers
 let paused = false;
 let tickTimes: number[] = [];
-let debug = true;
 let startTime: number;
 let sec: number;
 let pausedTime = 0;
+
+// Configs
+let tps: number = 60;
+let autoPlay: boolean = false;
+let combo: number = 0;
+let hitVolume: number = 0.5;
+let backgroundVolume: number = 0.5;
+let debug = true;
+
+// Sound Managers
+let hitSoundManager: SoundManager;
+let backgroundMusic: EnhancedAudioContext;
 let ec: EnhancedContent;
+
+// Event bus
 let bus = new EventBus<{
     hit: number,
     miss: null,
@@ -47,7 +66,9 @@ let bus = new EventBus<{
     start: null,
 }>();
 
-function renderText(text: string, x: number, y: number, align: CanvasTextAlign = "left", fontSize: number = 50, fill: RGBAColor | number = new RGBAColor(255, 255, 255)) {
+// Render functions
+
+function renderText(text: string, x: number, y: number, align: CanvasTextAlign = "center", fontSize: number = 50, fill: RGBAColor | number = new RGBAColor(255, 255, 255)) {
     ec.render(new TextCanvasObject(text, x, y, align, fontSize, fill instanceof RGBAColor ? fill : new RGBAColor(255, 255, 255, fill)));
 }
 
@@ -79,32 +100,33 @@ function drawA(note: Note) {
     }
     let ad = sec - note.aa;
     let np = note.p.cal((note.aa - note.h + note.p.spd) / note.p.spd);
-    if (note.a == 12 && ad < note.hi!) {
+    if (note.a == fadeInAnim && ad < note.hi!) {
         let rc = ad / note.hi! + 1;
         let c = new RGBAColor(note.f[0], note.f[1], note.f[2], rc - 1);
         ec.render(new NoteCanvasObject(...np, c));
-    } else if (note.a == 11 && ad < note.ho!) {
+    } else if (note.a == fadeOutAnim && ad < note.ho!) {
         let rc = ad / note.ho! + 1;
         let c = new RGBAColor(note.f[0], note.f[1], note.f[2], 2 - rc);
         ec.render(new NoteCanvasObject(...np, c));
     } else if (note.a > 0 && ad < 0.25) {
         let rc = ad / 0.25 + 1;
         let c: RGBAColor = new RGBAColor(0, 0, 0, 0);
-        if (note.a == 1) {
+        if (note.a == perfectAnim) {
             c = new RGBAColor(160, 144, 0, 2 - rc);
-        } else if (note.a == 2) {
+        } else if (note.a == goodAnim) {
             c = new RGBAColor(0, 167, 195, 2 - rc);
         }
         ec.render(new NoteCanvasObject(...np, c, rc * 88));
     }
 }
 
+// Main renderers
+
 function drawTexts() {
-    ctx.fillStyle = "rgb(255,255,255)";
-    ctx.font = "50px 'Courier New'";
-    ctx.textAlign = "center";
-    renderText(`${combo}`, 1600, 60, "center");
-    renderText(`COMBO`, 1600, 120, "center");
+    ctx.fillStyle = background;
+    ctx.font = font;
+    renderText(`${combo}`, 1600, 60);
+    renderText(`COMBO`, 1600, 120);
     renderText(`Point: ${(pointsGot / chart.notesTotal / 100 * 100000).toFixed(0)}`, 3150, 60, "right");
     renderText(`Music: ${(sec / chart.length * 100).toFixed(2)}%`, 3150, 120, "right");
     if (debug) {
@@ -136,21 +158,23 @@ function drawTexts() {
     }
 }
 
-function nextFrame() {
-    ec.clear();
-}
+// Entry
 
 async function main() {
+    // Load basic data
     let id = getQueryString("id");
+    // Load background
     document.getElementById("canvas_box")!.style.backgroundImage = `url(${(await imageLoader.loadAsUrl(`${id}.png`).catch(() => {
-        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2P4DwQACfsD/Z8fLAAAAAAASUVORK5CYII="
+        return blankImage
     }))})`;
+    // Prepare canvas
     let canvas: HTMLCanvasElement = document.getElementById('main_canvas') as HTMLCanvasElement;
     ctx = canvas.getContext('2d')!;
     ec = new EnhancedContent(ctx);
     ec.setBackGroundColor("rgba(0,0,0,0.5)");
     ec.clear();
-    renderText("游戏正在加载", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
+    renderText(loadingStr, 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
+    // Prepare point manager
     bus.on("hit", (e) => {
         combo++;
         maxCombo = Math.max(combo, maxCombo);
@@ -168,6 +192,7 @@ async function main() {
     bus.on("miss", () => {
         combo = 0;
     });
+    // Debug: tps
     bus.on("tick", () => {
         let now = Date.now();
         tickTimes.push(now);
@@ -175,9 +200,12 @@ async function main() {
             tickTimes.splice(0, 1);
         }
     });
+    // Time control
     bus.on("start", () => {
         startTime = Date.now() - backgroundMusic.actx.currentTime * 1000;
     });
+    // Key input handler
+    // - A
     let trackAKeyListener = new KeyListener("a");
     trackAKeyListener.onPress = () => {
         let fetched = false;
@@ -190,16 +218,16 @@ async function main() {
             }
             if (Math.abs(element.h - sec) <= 0.08) {
                 fetched = true;
-                element.a = 1;
+                element.a = perfectAnim;
                 element.aa = sec;
                 bus.emit("hit", 1);
             } else if (Math.abs(element.h - sec) <= 0.16) {
                 fetched = true;
-                element.a = 2;
+                element.a = goodAnim;
                 element.aa = sec;
                 bus.emit("hit", 2);
             } else if (Math.abs(element.h - sec) <= 0.32) {
-                element.a = 11;
+                element.a = fadeOutAnim;
                 element.aa = sec;
                 element.ho = 0.25;
                 bad++;
@@ -213,8 +241,8 @@ async function main() {
                 return;
             }
             if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
-                pointsGot -= element.a == 1 ? 100 : 75;
-                if (element.a == 1) {
+                pointsGot -= element.a == perfect ? 100 : 75;
+                if (element.a == perfect) {
                     perfect--;
                 } else {
                     good--;
@@ -226,6 +254,7 @@ async function main() {
         });
     };
     registerKeyListener(trackAKeyListener);
+    // - B
     let trackBKeyListener = new KeyListener("l");
     trackBKeyListener.onPress = () => {
         let fetched = false;
@@ -238,16 +267,16 @@ async function main() {
             }
             if (Math.abs(element.h - sec) <= 0.08) {
                 fetched = true;
-                element.a = 1;
+                element.a = perfectAnim;
                 element.aa = sec;
                 bus.emit("hit", 1);
             } else if (Math.abs(element.h - sec) <= 0.16) {
                 fetched = true;
-                element.a = 2;
+                element.a = goodAnim;
                 element.aa = sec;
                 bus.emit("hit", 2);
             } else if (Math.abs(element.h - sec) <= 0.32) {
-                element.a = 11;
+                element.a = fadeOutAnim;
                 element.aa = sec;
                 element.ho = 0.25;
                 bad++;
@@ -261,8 +290,8 @@ async function main() {
                 return;
             }
             if (element.h + element.al! - sec > 0 && element.h - sec < 0) {
-                pointsGot -= element.a == 1 ? 100 : 75;
-                if (element.a == 1) {
+                pointsGot -= element.a == perfectAnim ? 100 : 75;
+                if (element.a == perfectAnim) {
                     perfect--;
                 } else {
                     good--;
@@ -274,23 +303,29 @@ async function main() {
         });
     };
     registerKeyListener(trackBKeyListener);
+    // Error: ID is null
     if (id == null) {
         ec.clear();
-        renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
+        renderText(loadErrorStr, 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("No data file given.");
     }
+    // Load web data
+    // - chart
     let song: JChart;
     await chartLoader.loadAsJson(`${id}.json`).then(async (response) => song = response.default);
+    // Error: Song is null
     if (song == undefined) {
         ec.clear();
-        renderText("游戏加载错误，请尝试刷新", 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
+        renderText(loadErrorStr, 1600, 900, "center", 200, new RGBAColor(200, 200, 200));
         throw new Error("Data file has nothing or corrupted or not exist.");
     }
+    // - script
     if (song.script) {
         await scriptLoader.inject(song.script);
     }
+    // Prepare to start
     ec.clear();
-    renderText("点击屏幕开始", 1600, 900, "center", 200, new RGBAColor(230, 230, 230));
+    renderText(loadWaitClickStr, 1600, 900, "center", 200, new RGBAColor(230, 230, 230));
     await new Promise((resolve) => {
         document.onclick = () => {
             document.onclick = null;
@@ -298,7 +333,8 @@ async function main() {
         }
     });
     ec.clear();
-    renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
+    renderText(loadDownloadStr, 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
+    // Load: sounds
     hitSoundManager = new SoundManager(hit);
     backgroundMusic = new EnhancedAudioContext(new AudioContext());
     await backgroundMusic.actx.suspend();
@@ -310,50 +346,64 @@ async function main() {
     }
     backgroundMusic.setVolume(backgroundVolume);
     hitSoundManager.setVolume(hitVolume);
+    // Final chart parse
     chart = new Chart(song);
+    // Main loop register
     bus.on("start", () => {
         let mainTimer = setInterval(async function () {
+            // Pause handler
             if (paused) {
                 pausedTime = (Date.now() - startTime) / 1000 - sec;
                 return;
             }
-            nextFrame();
+            ec.clear();
+            // Calculate time
             sec = (Date.now() - startTime) / 1000 - pausedTime;
+            // Emit tick event
             bus.emit("tick", sec);
+            // Render all notes
+            // - Animation Notes
             chart.animationNotes.forEach(element => {
-                if (element.a == 12 && sec - element.aa > element.hi!) {
+                // Proceed animation of each note
+                if (element.a == fadeInAnim && sec - element.aa > element.hi!) {
                     element.a = 0;
                     element.aa = 0;
                 } else if (Math.abs(element.h - sec) <= 1.5 / tps) {
                     if (element.ho) {
-                        element.a = 11;
+                        element.a = fadeOutAnim;
                         element.aa = sec;
                     }
                 } else if (element.hi != undefined && Math.abs((element.h - element.p.spd - element.hi) - sec) <= 1.5 / tps) {
-                    element.a = 12;
+                    element.a = fadeInAnim;
                     element.aa = sec;
                 }
                 drawNote(element);
                 drawA(element);
             });
+            // - Clack Lines
             chart.notes.forEach(element => {
                 drawClackLine(element);
             });
+            // - Notes
             chart.notes.forEach(element => {
+                // Autoplay handler
                 if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.01 / tps)) {
-                    element.a = 1;
+                    element.a = perfect;
                     element.aa = element.h;
                     bus.emit("hit", 1);
-                } else if ((sec - element.h) > 0.16 && !element.a) {
+                } else if ((sec - element.h) > 0.16 && !element.a) { // Miss handler
                     element.a = -1;
                     bus.emit("miss", null);
                 }
                 drawNote(element);
             });
+            // - Notes' animation
             chart.notes.forEach(element => {
                 drawA(element);
             });
+            // - Texts
             drawTexts();
+            // - Finish handler
             if (sec >= song!.length) {
                 clearInterval(mainTimer);
                 paused = true;
@@ -361,11 +411,14 @@ async function main() {
             }
         }, 1000 / tps);
     });
+    // Start
     ec.clear();
     await backgroundMusic.actx.resume();
     backgroundMusic.play();
     bus.emit("start", null);
 }
+
+// Debug content inject
 
 if (debug) {
     globalThis.cinject = (k: string) => {
@@ -373,5 +426,9 @@ if (debug) {
     }
 }
 
+// Onload inject
+
 window.onload = main;
+
+
 export {bus, renderText, drawNote, ctx, drawA, drawClackLine, tps, paused, sec};

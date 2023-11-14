@@ -18,6 +18,8 @@ import {
 } from "./maker/chart";
 import {EnhancedAudioContext, SoundManager} from "./maker/sound";
 import {computed, onMounted, Ref, ref} from "vue";
+import {background, font} from "./player/const";
+import Vuepath from "./maker/vuepath.vue";
 
 const bar = ref("N");
 let ctx: CanvasRenderingContext2D;
@@ -66,7 +68,7 @@ const gamebox = ref(null);
 const canvasbox = ref(null);
 const sel = ref("none");
 
-function renderText(text: string, x: number, y: number, align: CanvasTextAlign = "left", fontSize: number = 50, fill: RGBAColor | number = new RGBAColor(255, 255, 255)) {
+function renderText(text: string, x: number, y: number, align: CanvasTextAlign = "center", fontSize: number = 50, fill: RGBAColor | number = new RGBAColor(255, 255, 255)) {
   ec.render(new TextCanvasObject(text, x, y, align, fontSize, fill instanceof RGBAColor ? fill : new RGBAColor(255, 255, 255, fill)));
 }
 
@@ -119,11 +121,11 @@ function drawA(note: Note) {
 }
 
 function drawTexts() {
-  ctx.fillStyle = "rgb(255,255,255)";
-  ctx.font = "50px 'Courier New'";
+  ctx.fillStyle = background;
+  ctx.font = font;
   ctx.textAlign = "center";
-  renderText(`${perfect}`, 1600, 60, "center");
-  renderText(`COMBO`, 1600, 120, "center");
+  renderText(`${perfect}`, 1600, 60);
+  renderText(`COMBO`, 1600, 120);
   renderText(`Point: ${(perfect / chart.value.notes.length * 100000).toFixed(0)}`, 3150, 60, "right");
   renderText(`Music: ${(sec.value / chart.value.length * 100).toFixed(2)}%`, 3150, 120, "right");
   if (debug) {
@@ -235,7 +237,7 @@ onMounted(async () => {
         drawA(element);
       });
       drawTexts();
-      if (sec.value >= song.value.length) {
+      if (sec.value >= chart.value.length) {
         csec.value = 0;
       }
     }, 1000 / tps);
@@ -245,32 +247,6 @@ onMounted(async () => {
   backgroundMusic.play(0);
   bus.emit("start", null);
 });
-/*
-Object.defineProperty(window,"csec.value",{
-  get:()=>{return sec.value;},
-  set:(n:number)=>{
-    chart=new Chart(song);
-    perfect=0;
-    chart.value.notes.forEach(e=>{
-      if(e.h<n) {
-        perfect++;
-      }
-    });
-    backgroundMusic.pause();
-    startTime.value=Date.now()-n*1000;
-    pausedTime=0;
-    backgroundMusic.play(n);
-  }
-});
-Object.defineProperty(window,"cchart",{
-  get:()=>{return chart;},
-  set:(n)=>{
-    song=n;
-    globalThis.csec.value=0;
-  }
-});
- */
-
 const csec = computed({
   get: () => sec.value,
   set: (n) => {
@@ -393,42 +369,6 @@ const cpsong=computed({
     csong.value=JSON.parse(n);
   }
 });
-/*
-const cchart = computed({
-  get: () => JSON.stringify(csong.value),
-  set: async (n) => {
-    let m: JChart;
-    try {
-      m = JSON.parse(n);
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-    chart.value = new Chart(m);
-    perfect = 0;
-    chart.value.notes.forEach(e => {
-      if (e.h < sec.value) {
-        perfect++;
-      }
-    });
-    try {
-      backgroundMusic.pause();
-    } catch (e) {
-      console.error(e);
-    }
-    if (m.bgsound != song.value.bgsound) {
-      paused.value = true;
-      ec.clear();
-      renderText("加载中", 1600, 900, "center", 200, new RGBAColor(250, 250, 250));
-      await backgroundMusic.load(await soundLoader.loadAsUrl(m.bgsound));
-      ec.clear();
-    }
-    csong.value = m;
-    csec.value = 0;
-  }
-});
- */
-
 function changeBackground() {
   let url = URL.createObjectURL(bg.value.files[0]);
   console.log(url);
@@ -587,7 +527,68 @@ function pushPath() {
         </li>
       </ul>
       <ul id="notes" v-if="bar=='PE'">
-        <li v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
+        <template v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
+          <Vuepath :path="path" :index="index" :chart="chart" :sel="sel"></Vuepath>
+          <!--
+          <li>
+            <span class="noteTag">Path #{{ index + 1 }}</span>
+            <span class="noteTrack">Type</span>
+            <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
+              <option value="static">Static</option>
+              <option value="line">Line</option>
+              <option value="arc">Arc</option>
+              <option value="pow2">^2</option>
+            </select>
+            <template v-if="path instanceof StaticPath">
+              <div class="pathPosition">
+                (
+                <input class="pathPositionInput" v-model.number.lazy="path.x" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.y" type="text"/>
+                )
+              </div>
+              <span class="noteHitTime">Length</span>
+              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+            </template>
+            <template v-if="path instanceof LinePath">
+              <div class="pathPosition">
+                (
+                <input class="pathPositionInput" v-model.number.lazy="path.fx" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.fy" type="text"/>
+                )->(
+                <input class="pathPositionInput" v-model.number.lazy="path.tx" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.ty" type="text"/>
+                )
+              </div>
+              <span class="noteHitTime">Length</span>
+              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+            </template>
+            <template v-if="path instanceof ArcPath">
+              <div class="pathPosition arcEdit">
+                (
+                <input class="pathPositionInput" v-model.number.lazy="path.fromx" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.fromy" type="text"/>
+                )-(
+                <input class="pathPositionInput" v-model.number.lazy="path.cx" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.cy" type="text"/>
+                )>(
+                <input class="pathPositionInput" v-model.number.lazy="path.tox" type="text"/>
+                ,
+                <input class="pathPositionInput" v-model.number.lazy="path.toy" type="text"/>
+                )
+              </div>
+              <span class="noteHitTime">Length</span>
+              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+            </template>
+            <span class="noteDelete" @click="(getNote(sel).p as MultiPath).ps.splice(index,1)">X</span>
+          </li>
+          -->
+        </template>
+        <!--<li v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
           <span class="noteTag">Path #{{ index + 1 }}</span>
           <span class="noteTrack">Type</span>
           <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
@@ -642,7 +643,7 @@ function pushPath() {
             <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
           </template>
           <span class="noteDelete" @click="(getNote(sel).p as MultiPath).ps.splice(index,1)">X</span>
-        </li>
+        </li>-->
         <li id="add" @click="pushPath">
           +
         </li>
