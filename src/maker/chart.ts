@@ -302,5 +302,5 @@ type JPow2Path = {
     f: number;
     t: number;
 }
-export {Chart, Path, Note, MultiPath, StaticPath, LinePath, ArcPath, Pow2SPath};
+export {Chart, Path, Note, MultiPath, StaticPath, LinePath, ArcPath, Pow2SPath, SubscriberPath};
 export type {JChart, JPath, JNote, JAnimationNote};

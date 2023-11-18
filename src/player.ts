@@ -10,13 +10,17 @@ import {DynamicJsonLoader, DynamicLoader, DynamicScriptLoader} from "./player/ne
 import {EnhancedAudioContext, SoundManager} from "./player/sound";
 import {KeyListener, registerKeyListener} from "./player/keyboard";
 import {
-    loadingStr,
-    loadDownloadStr,
-    loadErrorStr,
-    loadWaitClickStr,
+    background,
     blankImage,
     fadeInAnim,
-    fadeOutAnim, perfectAnim, goodAnim, font, background
+    fadeOutAnim,
+    font,
+    goodAnim,
+    loadDownloadStr,
+    loadErrorStr,
+    loadingStr,
+    loadWaitClickStr,
+    perfectAnim
 } from "./player/const";
 
 // Resource loaders
@@ -44,6 +48,7 @@ let tickTimes: number[] = [];
 let startTime: number;
 let sec: number;
 let pausedTime = 0;
+let lock: boolean = false;
 
 // Configs
 let tps: number = 60;
@@ -356,6 +361,11 @@ async function main() {
                 pausedTime = (Date.now() - startTime) / 1000 - sec;
                 return;
             }
+            if (lock) {
+                console.log("Dropping tick! Try reducing tps");
+                return;
+            }
+            lock = true;
             ec.clear();
             // Calculate time
             sec = (Date.now() - startTime) / 1000 - pausedTime;
@@ -388,7 +398,7 @@ async function main() {
             chart.notes.forEach(element => {
                 // Autoplay handler
                 if (autoPlay && !element.a && (Math.abs(element.h - sec) < 1.01 / tps)) {
-                    element.a = perfect;
+                    element.a = perfectAnim;
                     element.aa = element.h;
                     bus.emit("hit", 1);
                 } else if ((sec - element.h) > 0.16 && !element.a) { // Miss handler
@@ -407,8 +417,17 @@ async function main() {
             if (sec >= song!.length) {
                 clearInterval(mainTimer);
                 paused = true;
-                location.replace(`./finish.html${setQueryString({i: id, c: maxCombo, t: (pointsGot / chart.notesTotal / 100 * 100000).toFixed(0), p: perfect, g: good, b: bad, m: chart.notesTotal - perfect - good})}`);
+                location.replace(`./finish.html${setQueryString({
+                    i: id,
+                    c: maxCombo,
+                    t: (pointsGot / chart.notesTotal / 100 * 100000).toFixed(0),
+                    p: perfect,
+                    g: good,
+                    b: bad,
+                    m: chart.notesTotal - perfect - good
+                })}`);
             }
+            lock = false;
         }, 1000 / tps);
     });
     // Start

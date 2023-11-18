@@ -5,7 +5,8 @@ import {ClackLineCanvasObject, EnhancedContent, NoteCanvasObject, RGBAColor, Tex
 import {EventBus} from "./maker/event";
 import {
   ArcPath,
-  Chart, JAnimationNote,
+  Chart,
+  JAnimationNote,
   JChart,
   JNote,
   JPath,
@@ -53,6 +54,7 @@ let debug = true;
 const startTime = ref(0);
 const sec = ref(0);
 let pausedTime = 0;
+let lock = false;
 let ec: EnhancedContent;
 let sh = 100000;
 let bus = new EventBus<{
@@ -200,6 +202,11 @@ onMounted(async () => {
         pausedTime = (Date.now() - startTime.value) / 1000 - sec.value;
         return;
       }
+      if (lock) {
+        console.log("Dropping tick! Try reducing tps");
+        return;
+      }
+      lock = true;
       nextFrame();
       sec.value = (Date.now() - startTime.value) / 1000 - pausedTime;
       bus.emit("tick", sec.value);
@@ -240,6 +247,7 @@ onMounted(async () => {
       if (sec.value >= chart.value.length) {
         csec.value = 0;
       }
+      lock = false;
     }, 1000 / tps);
   });
   ec.clear();
@@ -273,42 +281,44 @@ const csec = computed({
     }
   }
 });
-function reParsePath(p:Path):JPath{
+
+function reParsePath(p: Path): JPath {
   if (p instanceof StaticPath) {
     return {
-      type:"static",
-      pos:[p.x,p.y],
-      spd:p.spd
+      type: "static",
+      pos: [p.x, p.y],
+      spd: p.spd
     };
   }
   if (p instanceof LinePath) {
     return {
-      type:"line",
-      f:[p.fx,p.fy],
-      t:[p.tx,p.ty],
-      spd:p.spd
+      type: "line",
+      f: [p.fx, p.fy],
+      t: [p.tx, p.ty],
+      spd: p.spd
     };
   }
   if (p instanceof ArcPath) {
     return {
-      type:"arc",
-      c:[p.cx,p.cy],
-      f:[p.fromx,p.fromy],
-      t:[p.tox,p.toy],
-      spd:p.spd
+      type: "arc",
+      c: [p.cx, p.cy],
+      f: [p.fromx, p.fromy],
+      t: [p.tox, p.toy],
+      spd: p.spd
     };
   }
   if (p instanceof Pow2SPath) {
     return {
-      type:"pow2",
-      p:reParsePath(p.p),
-      f:p.f,
-      t:p.t
+      type: "pow2",
+      p: reParsePath(p.p),
+      f: p.f,
+      t: p.t
     };
   }
 }
-function reParseNote(n:Note){
-  if(n.y=="I") {
+
+function reParseNote(n: Note) {
+  if (n.y == "I") {
     let r: JNote = {h: 0, paths: [], track: undefined, type: "I"};
     r.h = n.h;
     (n.p as MultiPath).ps.forEach(e => {
@@ -316,59 +326,62 @@ function reParseNote(n:Note){
     });
     r.track = (n.t as "A" | "B");
     return r;
-  }else{
-    let r: JNote = {h: 0, paths: [], track: undefined, type: "A", al:undefined};
+  } else {
+    let r: JNote = {h: 0, paths: [], track: undefined, type: "A", al: undefined};
     r.h = n.h;
     (n.p as MultiPath).ps.forEach(e => {
       r.paths.push(reParsePath(e));
     });
     r.track = (n.t as "A" | "B");
-    r.al=n.al;
+    r.al = n.al;
     return r;
   }
 }
-function reParseAnimationNote(n:Note){
-  if(n.y=="I") {
+
+function reParseAnimationNote(n: Note) {
+  if (n.y == "I") {
     let r: JAnimationNote = {h: 0, paths: [], type: "I"};
     r.h = n.h;
     (n.p as MultiPath).ps.forEach(e => {
       r.paths.push(reParsePath(e));
     });
     return r;
-  }else{
-    let r: JAnimationNote = {h: 0, paths: [], type: "A", al:undefined};
+  } else {
+    let r: JAnimationNote = {h: 0, paths: [], type: "A", al: undefined};
     r.h = n.h;
     (n.p as MultiPath).ps.forEach(e => {
       r.paths.push(reParsePath(e));
     });
-    r.al=n.al;
+    r.al = n.al;
     return r;
   }
 }
+
 const csong = computed({
-  get: ()=>{
-    let r:JChart={animationNotes: [], length: 0, notes: []};
-    chart.value.notes.forEach(e=>{
+  get: () => {
+    let r: JChart = {animationNotes: [], length: 0, notes: []};
+    chart.value.notes.forEach(e => {
       r.notes.push(reParseNote(e as Note));
     });
-    chart.value.animationNotes.forEach(e=>{
+    chart.value.animationNotes.forEach(e => {
       r.animationNotes.push(reParseAnimationNote(e as Note));
     });
-    r.length=chart.value.length;
+    r.length = chart.value.length;
     return r;
   },
-  set: (n)=>{
-    chart.value=new Chart(n);
+  set: (n) => {
+    chart.value = new Chart(n);
   }
 });
-const cpsong=computed({
-  get:()=>{
+const cpsong = computed({
+  get: () => {
     return JSON.stringify(csong.value);
   },
-  set:(n)=>{
-    csong.value=JSON.parse(n);
+  set: (n) => {
+    csong.value = JSON.parse(n);
   }
 });
+
 function changeBackground() {
   let url = URL.createObjectURL(bg.value.files[0]);
   console.log(url);
@@ -449,7 +462,7 @@ function previewPath() {
   sh = getNote(sel.value).h;
   let s = getNote(sel.value).p.spd;
   paused.value = false;
-  csec.value = sh-s;
+  csec.value = sh - s;
 }
 
 bus.on("tick", (e) => {
@@ -495,7 +508,8 @@ function pushPath() {
           </select>
           <span class="noteHitTime">Hit Time</span>
           <span class="noteClack">Clack Note</span>
-          <input type="checkbox" class="noteIfClack" :checked="note.y=='A'" @change="e=>{note.y=(e.target as HTMLInputElement).checked?'A':'I'}">
+          <input type="checkbox" class="noteIfClack" :checked="note.y=='A'"
+                 @change="e=>{note.y=(e.target as HTMLInputElement).checked?'A':'I'}">
           <span class="noteClackTime" v-if="note.y=='A'">Clack Length</span>
           <input class="noteClackTimeInput" v-if="note.y=='A'" v-model.number="note.al" type="text"/>
           <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
@@ -519,7 +533,15 @@ function pushPath() {
                  :value="`#${note.f[0].toString(16)}${note.f[1].toString(16)}${note.f[2].toString(16)}`"
                  @change="e=>{cColor(e,note as Note)}"/>
           <span class="noteHitTime">Hit Time</span>
+          <span class="noteClack">Clack Note</span>
+          <input type="checkbox" class="noteIfClack" :checked="note.y=='A'"
+                 @change="e=>{note.y=(e.target as HTMLInputElement).checked?'A':'I'}">
+          <span class="noteClackTime" v-if="note.y=='A'">Clack Length</span>
+          <input class="noteClackTimeInput" v-if="note.y=='A'" v-model.number="note.al" type="text"/>
           <input class="noteHitTimeInput" v-model.number="note.h" type="text"/>
+          <span class="noteFadeTime">Fade In&Out</span>
+          <input class="noteFadeIn" v-model.number="note.hi" type="text"/>
+          <input class="noteFadeOut" v-model.number="note.ho" type="text"/>
           <span class="noteDelete" @click="chart.animationNotes.splice(index,1)">X</span>
         </li>
         <li id="add" @click="pushANote">
@@ -527,123 +549,8 @@ function pushPath() {
         </li>
       </ul>
       <ul id="notes" v-if="bar=='PE'">
-        <template v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
-          <Vuepath :path="path" :index="index" :chart="chart" :sel="sel"></Vuepath>
-          <!--
-          <li>
-            <span class="noteTag">Path #{{ index + 1 }}</span>
-            <span class="noteTrack">Type</span>
-            <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
-              <option value="static">Static</option>
-              <option value="line">Line</option>
-              <option value="arc">Arc</option>
-              <option value="pow2">^2</option>
-            </select>
-            <template v-if="path instanceof StaticPath">
-              <div class="pathPosition">
-                (
-                <input class="pathPositionInput" v-model.number.lazy="path.x" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.y" type="text"/>
-                )
-              </div>
-              <span class="noteHitTime">Length</span>
-              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-            </template>
-            <template v-if="path instanceof LinePath">
-              <div class="pathPosition">
-                (
-                <input class="pathPositionInput" v-model.number.lazy="path.fx" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.fy" type="text"/>
-                )->(
-                <input class="pathPositionInput" v-model.number.lazy="path.tx" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.ty" type="text"/>
-                )
-              </div>
-              <span class="noteHitTime">Length</span>
-              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-            </template>
-            <template v-if="path instanceof ArcPath">
-              <div class="pathPosition arcEdit">
-                (
-                <input class="pathPositionInput" v-model.number.lazy="path.fromx" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.fromy" type="text"/>
-                )-(
-                <input class="pathPositionInput" v-model.number.lazy="path.cx" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.cy" type="text"/>
-                )>(
-                <input class="pathPositionInput" v-model.number.lazy="path.tox" type="text"/>
-                ,
-                <input class="pathPositionInput" v-model.number.lazy="path.toy" type="text"/>
-                )
-              </div>
-              <span class="noteHitTime">Length</span>
-              <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-            </template>
-            <span class="noteDelete" @click="(getNote(sel).p as MultiPath).ps.splice(index,1)">X</span>
-          </li>
-          -->
-        </template>
-        <!--<li v-for="(path,index) in (getNote(sel).p as MultiPath).ps">
-          <span class="noteTag">Path #{{ index + 1 }}</span>
-          <span class="noteTrack">Type</span>
-          <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
-            <option value="static">Static</option>
-            <option value="line">Line</option>
-            <option value="arc">Arc</option>
-            <option value="pow2">^2</option>
-          </select>
-          <template v-if="path instanceof StaticPath">
-            <div class="pathPosition">
-              (
-              <input class="pathPositionInput" v-model.number.lazy="path.x" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.y" type="text"/>
-              )
-            </div>
-            <span class="noteHitTime">Length</span>
-            <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-          </template>
-          <template v-if="path instanceof LinePath">
-            <div class="pathPosition">
-              (
-              <input class="pathPositionInput" v-model.number.lazy="path.fx" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.fy" type="text"/>
-              )->(
-              <input class="pathPositionInput" v-model.number.lazy="path.tx" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.ty" type="text"/>
-              )
-            </div>
-            <span class="noteHitTime">Length</span>
-            <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-          </template>
-          <template v-if="path instanceof ArcPath">
-            <div class="pathPosition arcEdit">
-              (
-              <input class="pathPositionInput" v-model.number.lazy="path.fromx" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.fromy" type="text"/>
-              )-(
-              <input class="pathPositionInput" v-model.number.lazy="path.cx" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.cy" type="text"/>
-              )>(
-              <input class="pathPositionInput" v-model.number.lazy="path.tox" type="text"/>
-              ,
-              <input class="pathPositionInput" v-model.number.lazy="path.toy" type="text"/>
-              )
-            </div>
-            <span class="noteHitTime">Length</span>
-            <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
-          </template>
-          <span class="noteDelete" @click="(getNote(sel).p as MultiPath).ps.splice(index,1)">X</span>
-        </li>-->
+        <Vuepath v-for="(path,index) in (getNote(sel).p as MultiPath).ps" :path="path" :index="index"
+                 :chart="chart as Chart" :sel="sel"></Vuepath>
         <li id="add" @click="pushPath">
           +
         </li>
@@ -827,22 +734,43 @@ select {
   top: 3em;
 }
 
-.noteClack{
+.noteFadeTime {
+  position: absolute;
+  left: 15em;
+  top: 3em;
+}
+
+.noteFadeIn {
+  position: absolute;
+  left: 22em;
+  top: 3em;
+  width: 2em;
+}
+
+.noteFadeOut {
+  position: absolute;
+  left: 24em;
+  top: 3em;
+  width: 2em;
+}
+
+
+.noteClack {
   position: absolute;
   left: 12em;
   top: 1em;
 }
 
-.noteIfClack{
+.noteIfClack {
   position: absolute;
   left: 19em;
   top: 1em;
   margin: 0;
-  width:1em;
-  height:1em;
+  width: 1em;
+  height: 1em;
 }
 
-.noteClackTime{
+.noteClackTime {
   position: absolute;
   left: 12em;
   top: 2em;
@@ -857,40 +785,19 @@ select {
   width: 5em;
 }
 
-.pathPosition{
-  position: absolute;
-  left: 5em;
-  top: 2em;
-}
-
 .noteHitTimeInput {
   position: absolute;
   font-size: 1em;
   left: 10em;
   top: 3em;
   height: 1.25em;
-  width: 10em;
+  width: 5em;
 }
 
 .noteDelete {
   position: absolute;
   right: 1em;
   top: 0;
-}
-
-.pathTrackInput {
-  position: absolute;
-  font-size: 1em;
-  left: 9em;
-  top: 1em;
-  height: 1.25em;
-  width: 10em;
-}
-
-.pathPositionInput {
-  font-size: 1em;
-  height: 1.25em;
-  width: 3em;
 }
 
 ul {
@@ -901,22 +808,18 @@ ul {
   background-color: #404040;
 }
 
-#chartArea{
+#chartArea {
   width: 40em;
   height: 3em;
   resize: none;
 }
 
-button{
+button {
   font-size: 1em;
 }
 
-textarea{
+textarea {
   font-size: 1em;
 }
 
-.arcEdit{
-  top: 2.67em;
-  font-size: 0.75em;
-}
 </style>

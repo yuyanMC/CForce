@@ -1,11 +1,10 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 
-import {ArcPath, Chart, LinePath, MultiPath, Note, Path, Pow2SPath, StaticPath, SubscriberPath} from "./chart";
-import Vuechildpath from "./vuechildpath.vue";
+import {ArcPath, Chart, LinePath, Note, Path, Pow2SPath, StaticPath, SubscriberPath} from "./chart";
 
 const props = defineProps({
-  index: {
-    type: Number,
+  father: {
+    type: SubscriberPath,
   },
   path: {
     type: Path,
@@ -46,7 +45,7 @@ function getType(p: Path) {
   throw new Error("Invalid Path");
 }
 
-function changePathType(p: number, e: Event) {
+function changePathType(e: Event) {
   let type = (e.target as HTMLSelectElement).value;
   let spd = props.path.spd;
   let path: Path = new StaticPath(spd, 1600, 900);
@@ -62,15 +61,15 @@ function changePathType(p: number, e: Event) {
   if (type == "pow2") {
     path = new Pow2SPath(new StaticPath(spd, 1600, 900));
   }
-  (getNote(props.sel).p as MultiPath).ps[p] = path;
+  props.father.p = path;
 }
 </script>
 
 <template>
   <li>
-    <span class="noteTag">Path #{{ index + 1 }}</span>
+    <span class="noteTag">Child Path</span>
     <span class="noteTrack">Type</span>
-    <select class="pathTrackInput" :value="getType(path)" @change="e=>changePathType(index,e)">
+    <select :value="getType(path)" class="pathTrackInput" @change="e=>changePathType(e)">
       <option value="static">Static</option>
       <option value="line">Line</option>
       <option value="arc">Arc</option>
@@ -79,59 +78,58 @@ function changePathType(p: number, e: Event) {
     <template v-if="path instanceof StaticPath">
       <div class="pathPosition">
         (
-        <input class="pathPositionInput" v-model.number.lazy="path.x" type="text"/>
+        <input v-model.number.lazy="path.x" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.y" type="text"/>
+        <input v-model.number.lazy="path.y" class="pathPositionInput" type="text"/>
         )
       </div>
       <span class="noteHitTime">Length</span>
-      <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+      <input v-model.number.lazy="path.spd" class="noteHitTimeInput" type="text"/>
     </template>
     <template v-if="path instanceof LinePath">
       <div class="pathPosition">
         (
-        <input class="pathPositionInput" v-model.number.lazy="path.fx" type="text"/>
+        <input v-model.number.lazy="path.fx" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.fy" type="text"/>
+        <input v-model.number.lazy="path.fy" class="pathPositionInput" type="text"/>
         )->(
-        <input class="pathPositionInput" v-model.number.lazy="path.tx" type="text"/>
+        <input v-model.number.lazy="path.tx" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.ty" type="text"/>
+        <input v-model.number.lazy="path.ty" class="pathPositionInput" type="text"/>
         )
       </div>
       <span class="noteHitTime">Length</span>
-      <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+      <input v-model.number.lazy="path.spd" class="noteHitTimeInput" type="text"/>
     </template>
     <template v-if="path instanceof ArcPath">
       <div class="pathPosition arcEdit">
         (
-        <input class="pathPositionInput" v-model.number.lazy="path.fromx" type="text"/>
+        <input v-model.number.lazy="path.fromx" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.fromy" type="text"/>
+        <input v-model.number.lazy="path.fromy" class="pathPositionInput" type="text"/>
         )-(
-        <input class="pathPositionInput" v-model.number.lazy="path.cx" type="text"/>
+        <input v-model.number.lazy="path.cx" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.cy" type="text"/>
+        <input v-model.number.lazy="path.cy" class="pathPositionInput" type="text"/>
         )>(
-        <input class="pathPositionInput" v-model.number.lazy="path.tox" type="text"/>
+        <input v-model.number.lazy="path.tox" class="pathPositionInput" type="text"/>
         ,
-        <input class="pathPositionInput" v-model.number.lazy="path.toy" type="text"/>
+        <input v-model.number.lazy="path.toy" class="pathPositionInput" type="text"/>
         )
       </div>
       <span class="noteHitTime">Length</span>
-      <input class="noteHitTimeInput" v-model.number.lazy="path.spd" type="text"/>
+      <input v-model.number.lazy="path.spd" class="noteHitTimeInput" type="text"/>
     </template>
     <template v-if="path instanceof Pow2SPath">
       <div class="pathPosition">
-        <input class="pathPositionInput" v-model.number.lazy="path.f" type="text"/>
+        <input v-model.number.lazy="path.f" class="pathPositionInput" type="text"/>
         ^2&nbsp;->&nbsp;
-        <input class="pathPositionInput" v-model.number.lazy="path.t" type="text"/>
+        <input v-model.number.lazy="path.t" class="pathPositionInput" type="text"/>
         ^2
       </div>
     </template>
-    <span class="noteDelete" @click="(getNote(sel).p as MultiPath).ps.splice(index,1)">X</span>
   </li>
-  <Vuechildpath v-if="path instanceof SubscriberPath" :father="path" :path="path.p" :chart="chart"
+  <Vuechildpath v-if="path instanceof SubscriberPath" :chart="chart" :father="path" :path="path.p"
                 :sel="sel"></Vuechildpath>
 </template>
 
@@ -190,12 +188,6 @@ li {
   top: 3em;
   height: 1.25em;
   width: 10em;
-}
-
-.noteDelete {
-  position: absolute;
-  right: 1em;
-  top: 0;
 }
 
 .pathTrackInput {

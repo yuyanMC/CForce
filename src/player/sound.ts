@@ -19,8 +19,6 @@ class EnhancedAudioContext {
         source.start(0);
         gainNode.gain.value = this.volume
         gainNode.connect(this.actx.destination)
-        console.log(`[sound.ts/EnhancedAudioContext] Audio '${this.url}' played.`);
-        console.debug(source, gainNode, this.actx, this.audioBuffer);
     }
 
     async init(arrayBuffer: ArrayBuffer) {
@@ -32,7 +30,7 @@ class EnhancedAudioContext {
 
     async load(url: string) {
         this.url = url;
-        return fetch(url).then(e => e.arrayBuffer()).then(e => this.init(e)).then(e => console.log(`[sound.ts/EnhancedAudioContext] Audio '${url}' loaded.`));
+        return fetch(url).then(e => e.arrayBuffer()).then(e => this.init(e));
     }
 
     setVolume(volume: number) {
@@ -59,16 +57,13 @@ class SoundManager {
         for (let i = 0; i < this.num; i++) {
             this.enhancedAudioContexts.push(new EnhancedAudioContext(new AudioContext()));
             await this.enhancedAudioContexts[i].load(this.url);
-            console.log(`[sound.ts/SoundManager] Audio '${this.url}' loaded for #${i + 1}/${this.num}`);
         }
     }
 
     play() {
-        console.debug(this.enhancedAudioContexts);
         for (let i = 0; i < this.num; i++) {
             if ((Date.now() - this.enhancedAudioContexts[i].startTime) > this.enhancedAudioContexts[i].audioBuffer.length / this.enhancedAudioContexts[i].audioBuffer.sampleRate) {
                 this.enhancedAudioContexts[i].play();
-                console.log(`[sound.ts/SoundManager] Audio '${this.url}' played for #${i + 1}/${this.num}`);
                 return;
             }
         }

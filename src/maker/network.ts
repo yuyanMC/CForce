@@ -21,6 +21,7 @@ class DynamicLoader {
         return toDataUrl(await this.loadAsUrl(name));
     }
 }
+
 async function toDataUrl(url: string): Promise<string> {
     let xhr = new XMLHttpRequest();
     let p: Promise<string> = new Promise((resolve) => {
